@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -111,8 +111,8 @@ model RetakeRequest {
   id        String   @id @default(cuid())
   siswaId   String
   siswa     Siswa    @relation(fields: [siswaId], references: [id])
-  jenis     String   // "minat-bakat" | "psikologi" | "gaya-belajar" | "karakter"
-  status    String   @default("pending") // "pending" | "approved" | "rejected"
+  jenis     String
+  status    String   @default("pending")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -136,7 +136,7 @@ model GuruAsesmen {
 
 model SoalAsesmen {
   id        String   @id @default(cuid())
-  jenis     String   // "minat-bakat", "psikologi", "gaya-belajar", "karakter", "guru-mengajar", "guru-psikologi"
+  jenis     String
   nomor     Int
   teks      String
   dimensi   String   @default("")
