@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  nipy      String?
+  role      String   @default("guru")
+  kelas     String?
+  mapel     String?
+  status      String   @default("active")
+  anonymousId String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  chatMessages ChatMessage[]
+  guruAsesmen   GuruAsesmen?
+}
+
+model ChatMessage {
+  id           String   @id @default(cuid())
+  anonymousId  String
+  message      String
+  senderRole   String   @default("siswa")
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id])
+  replyToId    String?
+  replyTo      ChatMessage? @relation("ChatReplies", fields: [replyToId], references: [id])
+  replies      ChatMessage[] @relation("ChatReplies")
+  createdAt    DateTime @default(now())
+}
+
+model Siswa {
+  id        String   @id @default(cuid())
+  nama      String
+  kelas     String
+  nisn      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  minatBakat    MinatBakat[]
+  psikologi     Psikologi[]
+  gayaBelajar   GayaBelajar[]
+  karakterDiri  KarakterDiri[]
+  mbti          Mbti[]
+  retakeRequests RetakeRequest[]
+}
+
+model Kelas {
+  id        String   @id @default(cuid())
+  nama      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MinatBakat {
+  id        String   @id @default(cuid())
+  siswaId   String
+  siswa     Siswa    @relation(fields: [siswaId], references: [id])
+  jawaban   String
+  skor      String
+  createdAt DateTime @default(now())
+}
+
+model Psikologi {
+  id        String   @id @default(cuid())
+  siswaId   String
+  siswa     Siswa    @relation(fields: [siswaId], references: [id])
+  jawaban   String
+  skor      String
+  createdAt DateTime @default(now())
+}
+
+model GayaBelajar {
+  id        String   @id @default(cuid())
+  siswaId   String
+  siswa     Siswa    @relation(fields: [siswaId], references: [id])
+  jawaban   String
+  skor      String
+  createdAt DateTime @default(now())
+}
+
+model KarakterDiri {
+  id           String   @id @default(cuid())
+  siswaId      String
+  siswa        Siswa    @relation(fields: [siswaId], references: [id])
+  jawaban      String
+  skor         String
+  nilaiPersonal String?
+  createdAt    DateTime @default(now())
+}
+
+model Mbti {
+  id        String   @id @default(cuid())
+  siswaId   String
+  siswa     Siswa    @relation(fields: [siswaId], references: [id])
+  jawaban   String
+  skor      String
+  createdAt DateTime @default(now())
+}
+
+model RetakeRequest {
+  id        String   @id @default(cuid())
+  siswaId   String
+  siswa     Siswa    @relation(fields: [siswaId], references: [id])
+  jenis     String   // "minat-bakat" | "psikologi" | "gaya-belajar" | "karakter"
+  status    String   @default("pending") // "pending" | "approved" | "rejected"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([siswaId, jenis])
+}
+
+model GuruAsesmen {
+  id        String   @id @default(cuid())
+  guruId    String
+  guru      User     @relation(fields: [guruId], references: [id])
+  jawaban   String   @default("{}")
+  skor      String   @default("{}")
+  jawabanPsikologi String @default("{}")
+  skorPsikologi    String @default("{}")
+  jawabanMbti      String @default("{}")
+  skorMbti         String @default("{}")
+  createdAt DateTime @default(now())
+
+  @@unique([guruId])
+}
+
+model SoalAsesmen {
+  id        String   @id @default(cuid())
+  jenis     String   // "minat-bakat", "psikologi", "gaya-belajar", "karakter", "guru-mengajar", "guru-psikologi"
+  nomor     Int
+  teks      String
+  dimensi   String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([jenis, nomor])
+}
+
+model Banner {
+  id        String   @id @default(cuid())
+  judul     String
+  deskripsi String   @default("")
+  tombol    String   @default("")
+  link      String   @default("")
+  aktif     Boolean  @default(true)
+  urutan    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
