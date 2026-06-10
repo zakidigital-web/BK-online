@@ -12,7 +12,7 @@ import { BannerSlider } from "@/components/banner-slider"
 import {
   MessageCircleHeart, Brain, Sparkles, BookOpen, BarChart3, Shield,
   Menu, X, GraduationCap,   ArrowRight, School, Heart,
-  CheckCircle2, Palette, ChevronDown,
+  CheckCircle2, ChevronDown,
 } from "lucide-react"
 
 const features = [
@@ -42,7 +42,6 @@ const itemAnim = {
 
 export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [themeOpen, setThemeOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [mounted, setMounted] = useState(false)
   const { preset, presets, setPreset } = useTheme()
@@ -81,53 +80,9 @@ export default function HomePage() {
                 Daftar
               </Button>
             </Link>
-            <div className="relative">
-              <button
-                onClick={() => setThemeOpen(!themeOpen)}
-                className={`flex h-8 w-8 items-center justify-center rounded-lg border transition-colors ${
-                  scrolled ? "border-slate-200 hover:border-slate-300" : "border-white/30 hover:border-white/50"
-                }`}
-                title="Ganti tema"
-              >
-                <div className="h-4 w-4 rounded-full" style={{ backgroundColor: presets[preset]?.hex || presets.indigo.hex }} />
-              </button>
-              <AnimatePresence>
-                {themeOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -4, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -4, scale: 0.95 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-2 w-44 rounded-xl border border-slate-200 bg-white p-2 shadow-xl"
-                  >
-                    {Object.entries(presets).map(([key, p]) => (
-                      <button
-                        key={key}
-                        onClick={() => { setPreset(key); setThemeOpen(false) }}
-                        className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
-                          preset === key ? "bg-slate-100 font-semibold text-gray-900" : "text-gray-600 hover:bg-slate-50"
-                        }`}
-                      >
-                        <div className="h-5 w-5 rounded-full border border-white/30 shadow-sm" style={{ backgroundColor: p.hex }} />
-                        {p.label}
-                        {preset === key && <CheckCircle2 className="ml-auto h-3.5 w-3.5 text-primary" />}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+
           </nav>
           <div className="flex items-center gap-2 md:hidden">
-            <button
-              onClick={() => setThemeOpen(!themeOpen)}
-              className={`flex h-8 w-8 items-center justify-center rounded-lg border ${
-                scrolled ? "border-slate-200" : "border-white/30"
-              }`}
-              title="Ganti tema"
-            >
-              <div className="h-4 w-4 rounded-full" style={{ backgroundColor: presets[preset]?.hex || presets.indigo.hex }} />
-            </button>
             <button className={`p-2 rounded-lg transition-colors ${scrolled ? "hover:bg-slate-100" : "hover:bg-white/10"}`} onClick={() => setMenuOpen(!menuOpen)}>
               {menuOpen ? <X className={`h-5 w-5 ${scrolled ? "text-gray-700" : "text-white"}`} /> : <Menu className={`h-5 w-5 ${scrolled ? "text-gray-700" : "text-white"}`} />}
             </button>
@@ -148,20 +103,6 @@ export default function HomePage() {
                 <Link href="/register" onClick={() => setMenuOpen(false)} className="block pt-1">
                   <Button size="sm" className="w-full bg-primary hover:bg-primary/90">Daftar Akun</Button>
                 </Link>
-                <div className={`pt-2 ${scrolled ? "border-t border-slate-100" : "border-t border-white/10"}`}>
-                  <p className={`text-xs mb-2 px-1 ${scrolled ? "text-gray-400" : "text-white/50"}`}>Tema warna</p>
-                  <div className="flex gap-2 px-1">
-                    {Object.entries(presets).map(([key, p]) => (
-                      <button
-                        key={key}
-                        onClick={() => { setPreset(key); setMenuOpen(false) }}
-                        className={`h-7 w-7 rounded-full border-2 transition-all ${preset === key ? "border-gray-900 scale-110" : "border-transparent"}`}
-                        style={{ backgroundColor: p.hex }}
-                        title={p.label}
-                      />
-                    ))}
-                  </div>
-                </div>
               </div>
             </motion.div>
           )}
@@ -257,40 +198,6 @@ export default function HomePage() {
             </div>
           </div>
         </section>
-
-        {/* ============ THEME PICKER (mobile floating) ============ */}
-        <div className="fixed bottom-6 right-6 z-40 md:hidden">
-          <div className="relative">
-            <button
-              onClick={() => setThemeOpen(!themeOpen)}
-              className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl border-4 border-white"
-            >
-              <Palette className="h-5 w-5" />
-            </button>
-            <AnimatePresence>
-              {themeOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                  className="absolute bottom-16 right-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl"
-                >
-                  <div className="flex gap-2.5">
-                    {Object.entries(presets).map(([key, p]) => (
-                      <button
-                        key={key}
-                        onClick={() => { setPreset(key); setThemeOpen(false) }}
-                        className={`h-9 w-9 rounded-full transition-all ${preset === key ? "ring-2 ring-offset-2 scale-110" : "ring-0"}`}
-                        style={{ backgroundColor: p.hex }}
-                        title={p.label}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
 
         {/* ============ ROLE CARDS ============ */}
         <section className="mx-auto max-w-6xl px-4 -mt-10 sm:px-6 relative z-10">

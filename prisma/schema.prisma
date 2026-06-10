@@ -146,6 +146,14 @@ model SoalAsesmen {
   @@unique([jenis, nomor])
 }
 
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Banner {
   id        String   @id @default(cuid())
   judul     String

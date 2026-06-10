@@ -4,11 +4,9 @@ import { createContext, useContext, useCallback, ReactNode, useState, useEffect 
 
 export interface ThemePreset {
   label: string
-  // Tailwind v4 CSS variable overrides (oklch format)
   primary: string
   "primary-foreground": string
   ring: string
-  // hex for inline styles
   hex: string
 }
 
@@ -77,25 +75,39 @@ function apply(p: ThemePreset) {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [preset, setPresetState] = useState("indigo")
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    const saved = localStorage.getItem("bk_theme")
-    if (saved && presets[saved]) {
-      setPresetState(saved)
-    }
+    fetch("/api/setting")
+      .then((r) => r.json())
+      .then((data) => {
+        const saved = data.settings?.theme
+        if (saved && presets[saved]) {
+          setPresetState(saved)
+        }
+        setLoaded(true)
+      })
+      .catch(() => {
+        setLoaded(true)
+      })
   }, [])
 
   useEffect(() => {
+    if (!loaded) return
     const p = presets[preset] || presets.indigo
     apply(p)
-  }, [preset])
+  }, [preset, loaded])
 
   const setPreset = useCallback((key: string) => {
     const p = presets[key]
     if (!p) return
-    localStorage.setItem("bk_theme", key)
-    apply(p)
     setPresetState(key)
+    apply(p)
+    fetch("/api/setting", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key: "theme", value: key }),
+    }).catch(() => {})
   }, [])
 
   return (
