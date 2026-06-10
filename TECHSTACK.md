@@ -27,12 +27,9 @@
 
 | Teknologi | Lingkungan | Kegunaan |
 |-----------|-----------|----------|
-| **SQLite** | Development | Database lokal (file `prisma/dev.db`) |
-| **PostgreSQL** | Production (Vercel) | Database云端 via Neon / Supabase / Vercel Postgres |
+| **PostgreSQL (Neon)** | Production | Serverless PostgreSQL, free tier 0.5GB |
 | **Prisma Client** | Semua | Query builder & migrasi |
-
-> **Catatan:** SQLite **tidak bisa** digunakan di Vercel karena environment serverless bersifat stateless.
-> Untuk production di Vercel, wajib menggunakan PostgreSQL.
+| **Prisma Neon Adapter** | Production | Adapter Neon untuk Prisma di serverless |
 
 ## Fitur & Library Pendukung
 
@@ -54,9 +51,18 @@
 |-------|--------|
 | **CSS Variables** | `--primary`, `--primary-foreground`, `--ring` di `globals.css` |
 | **Theme Context** | `useTheme()` — 6 preset warna (Indigo, Emerald, Rose, Sky, Violet, Orange) |
-| **Penyimpanan tema** | `localStorage` key `bk_theme` |
+| **Penyimpanan tema** | Database `Setting` model (admin-only via Pengaturan), dikirim via API |
 | **Responsive** | Mobile-first, breakpoint `sm/md/lg` |
-| **Dark mode** | Class `.dark` via `next-themes` (terpisah dari tema warna) |
+
+## Online / Offline Indicator
+
+| Fitur | Detail |
+|-------|--------|
+| **Heartbeat API** | `POST /api/user/heartbeat` — update `lastSeen` setiap 60 detik |
+| **Status API** | `GET /api/user/online-status` — daftar guru/admin + lastSeen |
+| **Client Hook** | `useHeartbeat(userId)` — ping 60s + visibility/focus API |
+| **UI Component** | `OnlineIndicator` — minimal (dot + count) atau daftar lengkap |
+| **Threshold** | 2 menit tanpa heartbeat → dianggap offline |
 
 ## Tooling
 
@@ -68,50 +74,15 @@
 | **Prisma CLI** | `prisma db push`, `prisma generate`, `prisma studio` |
 | **Vercel CLI** | Deploy & preview dari terminal |
 
-## Deployment (Vercel)
+## Deployment (Vercel + Neon)
+
+Proyek sudah menggunakan **PostgreSQL (Neon)** langsung — tidak perlu migrasi dari SQLite.
 
 | Layanan | Keterangan |
 |---------|------------|
 | **Vercel** | Hosting Next.js (production) |
-| **Neon** / **Supabase** / **Vercel Postgres** | PostgreSQL database untuk production |
-| **Prisma Migrate** | Migrasi database production |
-
-### Langkah Deployment ke Vercel
-
-1. **Siapkan database PostgreSQL** — Buat project di [Neon](https://neon.new), [Supabase](https://supabase.com), atau Vercel Postgres, salin connection string-nya.
-
-2. **Update Prisma schema** — Ubah provider dari `sqlite` ke `postgresql` di `prisma/schema.prisma`:
-   ```prisma
-   datasource db {
-     provider = "postgresql"
-     url      = env("DATABASE_URL")
-   }
-   ```
-
-3. **Install driver PostgreSQL**:
-   ```bash
-   npm remove @libsql/client @prisma/adapter-libsql
-   npm install @prisma/adapter-pg @neondatabase/serverless
-   ```
-
-4. **Update Prisma client** (`src/lib/db.ts`) — Gunakan adapter Neon untuk serverless.
-
-5. **Push ke GitHub** — Buat repository, push semua kode.
-
-6. **Import ke Vercel**:
-   - Buka [vercel.com/new](https://vercel.com/new)
-   - Import repository GitHub
-   - Framework: Next.js (otomatis terdeteksi)
-   - Tambahkan environment variable: `DATABASE_URL` (isi dengan connection string PostgreSQL)
-   - Deploy
-
-7. **Migrate database** — Setelah deploy pertama, jalankan:
-   ```bash
-   npx prisma migrate deploy
-   ```
-   atau via Vercel Post-Deploy hook / GitHub Action.
-
-8. **Setup domain kustom** (opsional) — Vercel → Project → Settings → Domains.
+| **Neon** | PostgreSQL serverless (sudah terhubung) |
+| **Prisma db push** | Sinkronisasi skema ke database |
 
 > **Lihat panduan lengkap** di `README.md` → bagian Deployment.
 
@@ -121,6 +92,10 @@
 src/
 ├── app/
 │   ├── api/           # REST API endpoints
+│   │   ├── auth/      # Login, register, password
+│   │   ├── chat/      # Curhat messages
+│   │   ├── user/      # Anonymous ID, heartbeat, online-status
+│   │   └── ...        # Asesmen, banner, setting, laporan, dll
 │   ├── admin/         # Admin pages (dashboard, banner, siswa, guru, laporan, dll)
 │   ├── asesmen/       # Student assessment pages
 │   ├── guru/          # Teacher assessment pages
@@ -130,36 +105,29 @@ src/
 ├── components/
 │   ├── ui/            # shadcn/ui components
 │   ├── asesmen/       # Assessment form components
+│   ├── curhat/        # Chat interface component
 │   ├── charts.tsx     # Recharts wrappers
 │   ├── banner-slider.tsx
 │   ├── desktop-nav.tsx
-│   └── mobile-nav.tsx
+│   ├── mobile-nav.tsx
+│   ├── online-indicator.tsx
+│   └── heartbeat-provider.tsx
 ├── lib/
 │   ├── asesmen/       # Assessment logic (soal, skor, interpretasi)
 │   ├── auth-context.tsx
 │   ├── theme-context.tsx
+│   ├── use-heartbeat.ts
 │   └── db.ts          # Prisma client instance
 └── app/globals.css    # Tailwind v4 config & CSS variables
 ```
 
 ## Aliran Data
 
-### Development (Lokal)
+### Development & Production (Neon PostgreSQL)
 ```
 Browser → Next.js (React/Tailwind)
               ↕ API Routes
            Prisma ORM
               ↕
-           SQLite DB (prisma/dev.db)
-```
-
-### Production (Vercel)
-```
-Browser → Vercel Edge/CDN
-              ↕
-           Next.js Serverless Functions
-              ↕ API Routes
-           Prisma ORM
-              ↕
-           PostgreSQL (Neon / Supabase)
+           PostgreSQL (Neon Serverless)
 ```

@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "@/lib/theme-context"
 import { BannerSlider } from "@/components/banner-slider"
+import { OnlineIndicator } from "@/components/online-indicator"
 import {
   MessageCircleHeart, Brain, Sparkles, BookOpen, BarChart3, Shield,
   Menu, X, GraduationCap,   ArrowRight, School, Heart,
@@ -124,9 +125,12 @@ export default function HomePage() {
                 animate={mounted ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.6 }}
               >
-                <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium backdrop-blur-sm mb-6 border border-white/10">
-                  <School className="h-4 w-4" />
-                  SMP Negeri 1 Genteng
+                <div className="flex flex-wrap items-center gap-3 mb-6">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium backdrop-blur-sm border border-white/10">
+                    <School className="h-4 w-4" />
+                    SMP Negeri 1 Genteng
+                  </div>
+                  <OnlineIndicator minimal />
                 </div>
                 <h1 className="text-4xl font-black leading-tight sm:text-5xl lg:text-6xl">
                   Bimbingan Konseling

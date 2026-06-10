@@ -18,6 +18,7 @@ model User {
   mapel     String?
   status      String   @default("active")
   anonymousId String?  @unique
+  lastSeen    DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

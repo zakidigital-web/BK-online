@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation"
 import { DesktopNav } from "@/components/desktop-nav"
 import { MobileNav } from "@/components/mobile-nav"
 import { useAuth } from "@/lib/auth-context"
+import { useHeartbeat } from "@/lib/use-heartbeat"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
   const router = useRouter()
+  useHeartbeat(user?.id)
 
   useEffect(() => {
     if (!user) {

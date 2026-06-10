@@ -19,7 +19,7 @@
 
 | Kebutuhan | Solusi dari BK Online |
 |-----------|----------------------|
-| ✅ Siswa ingin curhat tanpa ketahuan identitas | **Curhat Anonim** — tulis pesan tanpa nama |
+| ✅ Siswa ingin curhat tanpa ketahuan identitas | **Curhat Anonim** — tulis pesan tanpa nama, lihat status guru BK online/offline |
 | ✅ Guru BK ingin tahu minat & bakat siswa | **Asesmen RIASEC** — 36 pertanyaan skala 1-5 |
 | ✅ Mendeteksi masalah psikologis sejak dini | **Screening Psikologi** — 45 pertanyaan, 5 dimensi |
 | ✅ Mengetahui gaya belajar siswa | **Asesmen Gaya Belajar VARK** — 10 soal pilihan ganda |
@@ -29,7 +29,7 @@
 | ✅ Memantau perkembangan siswa per kelas | **Laporan & Dashboard** — rekap per siswa/kelas |
 | ✅ Mendokumentasikan kegiatan BK | **Riwayat tersimpan** — semua data asesmen & chat |
 
-**Teknologi:** Next.js (React) + Tailwind CSS + Prisma + SQLite (development) / PostgreSQL (production via Vercel)
+**Teknologi:** Next.js (React) + Tailwind CSS + Prisma + PostgreSQL (Neon Serverless)
 
 ---
 
@@ -99,6 +99,7 @@ Siswa → Tulis pesan (dapat menyertakan link gambar/video) → Masuk ke sistem 
 - **Siswa:** Buka Curhat → dapat ID anonim otomatis → kirim pesan
 - **Guru BK:** Dashboard → Kelola Curhat → lihat percakapan → balas
 - **Media:** Link gambar (jpg/png/gif/webp) otomatis ditampilkan sebagai `<img>`, video mp4 sebagai `<video>`, link YouTube sebagai embed
+- **Status Guru:** Siswa bisa melihat apakah Guru BK sedang online atau offline (indikator dot hijau/abu)
 - **Privasi:** Chat anonim otomatis dihapus setelah 7 hari
 
 ### 2. 📊 Asesmen Minat Bakat (RIASEC)

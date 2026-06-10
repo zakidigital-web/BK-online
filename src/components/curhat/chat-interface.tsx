@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
 import { useAuth } from "@/lib/auth-context"
+import { OnlineIndicator } from "@/components/online-indicator"
 import { useRouter } from "next/navigation"
 
 interface ChatMessage {
@@ -266,6 +267,11 @@ export function ChatInterface() {
             )
           )}
         </div>
+      </div>
+
+      {/* ONLINE STATUS */}
+      <div className="flex justify-end">
+        <OnlineIndicator minimal />
       </div>
 
       {/* ID BANNER */}

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { toast } from "sonner"
 import { MessageCircleHeart, Send, Mail, Search, CheckCircle2, Clock } from "lucide-react"
+import { OnlineIndicator } from "@/components/online-indicator"
 import { motion } from "framer-motion"
 
 interface ChatMessage {
@@ -89,7 +90,10 @@ export default function AdminCurhatPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[500px]">
+            <div className="mb-3">
+              <OnlineIndicator minimal />
+            </div>
+            <ScrollArea className="h-[460px]">
               {filteredIds.map((id) => {
                 const convMessages = messages.filter((m) => m.anonymousId === id)
                 const count = convMessages.length
