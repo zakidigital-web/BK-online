@@ -12,7 +12,7 @@ import { motion } from "framer-motion"
 import {
   ArrowDown, ArrowLeft, ArrowUp, Brain, Check, ChevronDown, ChevronUp, Circle, Clock3, Compass, Loader2, Minus, Send, Sparkles, UserCircle, CheckCircle2, ClipboardList, Star,
 } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
 
 const skalaLabel = ["Sangat Tidak Setuju", "Tidak Setuju", "Netral", "Setuju", "Sangat Setuju"]
 const skalaIcons = [ArrowDown, ChevronDown, Minus, ChevronUp, ArrowUp]
@@ -181,7 +181,7 @@ export function MbtiForm() {
   }
 
   async function submit() {
-    if (!nama.trim() || !kelas.trim()) { toast.error("Isi nama dan kelas dulu"); return }
+    if (!nama.trim()) { toast.error("Isi nama dulu"); return }
     setSubmitting(true)
     const skor = hitungSkor(jawaban)
     try {
@@ -379,14 +379,9 @@ export function MbtiForm() {
               </div>
               <div className="space-y-2">
                 <Label>Kelas</Label>
-                <Select value={kelas} onValueChange={(v) => setKelas(v ?? "")}>
-                  <SelectTrigger><SelectValue placeholder="Pilih kelas" /></SelectTrigger>
-                  <SelectContent>
-                    {["7A","7B","7C","7D","8A","8B","8C","8D","9A","9B","9C","9D"].map((k) => (
-                      <SelectItem key={k} value={k}>{k}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-700">
+                  {kelas || (loadingSiswa ? "Memuat..." : "Kelas belum diatur, hubungi Guru BK")}
+                </div>
               </div>
               <Button className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2" onClick={() => { setShowIntro(false); setMode("kuesioner") }}
                 disabled={!nama || !kelas || loadingSiswa}>

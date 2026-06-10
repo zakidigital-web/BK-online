@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/auth-context"
 import { questions, hitungSkor, getGayaDominan, labelGaya } from "@/lib/asesmen/gaya-belajar"
 import { motion, AnimatePresence } from "framer-motion"
 import { BookOpen, ArrowLeft, Check, Eye, Headphones, FileText, Hand, SkipForward, Compass, Star, CheckCircle2, Circle, Clock, UserCircle, Loader2, Send, Clock3, ClipboardList } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
 
 const dimensiIcons = {
   V: Eye,
@@ -185,7 +185,7 @@ export function GayaBelajarForm() {
   }
 
   async function submit() {
-    if (!nama.trim() || !kelas.trim()) { toast.error("Isi nama dan kelas dulu"); return }
+    if (!nama.trim()) { toast.error("Isi nama dulu"); return }
     setSubmitting(true)
     const skor = hitungSkor(jawaban)
     try {
@@ -342,14 +342,9 @@ export function GayaBelajarForm() {
               </div>
               <div className="space-y-2">
                 <Label>Kelas</Label>
-                <Select value={kelas} onValueChange={(v) => setKelas(v ?? "")}>
-                  <SelectTrigger><SelectValue placeholder="Pilih kelas" /></SelectTrigger>
-                  <SelectContent>
-                    {["7A","7B","7C","7D","8A","8B","8C","8D","9A","9B","9C","9D"].map((k) => (
-                      <SelectItem key={k} value={k}>{k}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-700">
+                  {kelas || (loadingSiswa ? "Memuat..." : "Kelas belum diatur, hubungi Guru BK")}
+                </div>
               </div>
               <Button className="w-full bg-blue-600 hover:bg-blue-700 gap-2" onClick={() => setShowIntro(false)} disabled={!nama || !kelas || loadingSiswa}>
                 {loadingSiswa ? "Memuat..." : "Mulai"} <BookOpen className="h-4 w-4" />
