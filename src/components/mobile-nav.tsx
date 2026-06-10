@@ -1,6 +1,6 @@
 "use client"
 
-import { LayoutDashboard, MessageCircleHeart, FileText, Users, Settings, LogOut, GraduationCap, ClipboardList, BookOpen, Brain, Sparkles, UserCircle, Home, HelpCircle, RotateCcw } from "lucide-react"
+import { LayoutDashboard, MessageCircleHeart, FileText, Users, Settings, LogOut, GraduationCap, ClipboardList, BookOpen, Brain, Sparkles, UserCircle, Home, HelpCircle, RotateCcw, BarChart3 } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -19,7 +19,12 @@ const adminItems = [
   { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/admin/curhat", icon: MessageCircleHeart, label: "Curhat" },
   { href: "/admin/laporan", icon: FileText, label: "Laporan" },
+  { href: "/admin/siswa", icon: Users, label: "Siswa" },
+  { href: "/admin/guru", icon: GraduationCap, label: "Guru" },
+  { href: "/admin/pertanyaan", icon: HelpCircle, label: "Soal" },
   { href: "/admin/retake", icon: RotateCcw, label: "Retake" },
+  { href: "/admin/analisa", icon: BarChart3, label: "Analisa" },
+  { href: "/admin/guru/laporan", icon: FileText, label: "Lap.Guru" },
   { href: "/admin/banner", icon: LayoutDashboard, label: "Banner" },
   { href: "/admin/pengaturan", icon: Settings, label: "Atur" },
 ]
@@ -29,17 +34,25 @@ const guruBKItems = [
   { href: "/admin/curhat", icon: MessageCircleHeart, label: "Curhat" },
   { href: "/admin/siswa", icon: Users, label: "Siswa" },
   { href: "/admin/laporan", icon: FileText, label: "Laporan" },
+  { href: "/admin/retake", icon: RotateCcw, label: "Retake" },
+  { href: "/admin/analisa", icon: BarChart3, label: "Analisa" },
+  { href: "/guru/asesmen", icon: ClipboardList, label: "Mengajar" },
+  { href: "/guru/psikologi", icon: BookOpen, label: "Psikologi" },
+  { href: "/guru/mbti", icon: Brain, label: "MBTI" },
+  { href: "/admin/guru/laporan", icon: FileText, label: "Lap.Guru" },
 ]
 
 const walasItems = [
   { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/admin/laporan", icon: FileText, label: "Laporan" },
   { href: "/admin/siswa", icon: Users, label: "Siswa" },
+  { href: "/admin/analisa", icon: BarChart3, label: "Analisa" },
 ]
 
 const guruMapelItems = [
   { href: "/guru/asesmen", icon: ClipboardList, label: "Mengajar" },
   { href: "/guru/psikologi", icon: BookOpen, label: "Psikologi" },
+  { href: "/guru/mbti", icon: Brain, label: "MBTI" },
   { href: "/guru/laporan", icon: FileText, label: "Laporan" },
 ]
 
@@ -81,7 +94,7 @@ export function MobileNav({
           </span>
         </div>
       )}
-      <div className="mx-auto flex max-w-sm items-center justify-between gap-1 px-3 py-1.5">
+      <div className="flex items-center gap-1 overflow-x-auto px-3 py-1.5 [&::-webkit-scrollbar]:hidden">
         {items.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
           return (
