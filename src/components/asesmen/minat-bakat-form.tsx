@@ -18,8 +18,11 @@ import {
   Check,
   ClipboardList,
   Download,
+  Frown,
+  Meh,
   Palette,
   Search,
+  Smile,
   Sparkles,
   TrendingUp,
   Users,
@@ -47,12 +50,14 @@ const dimensiIcons = {
 } as const
 
 const skalaMinatLabel = [
-  "Sangat tidak sesuai",
-  "Kurang sesuai",
+  "Sgt Tdk Sesuai",
+  "Kurang Sesuai",
   "Netral",
   "Sesuai",
-  "Sangat sesuai",
+  "Sgt Sesuai",
 ]
+
+const skalaMinatIcons = [Frown, Meh, Meh, Smile, Sparkles]
 
 const STORAGE_KEY = "bk_asesmen_minat_bakat"
 
@@ -475,13 +480,10 @@ export function MinatBakatForm() {
                           : "border-gray-100 bg-gray-50 hover:border-emerald-200 hover:bg-emerald-50/50 hover:scale-[1.02]"
                       }`}
                     >
-                      <span
-                        className={`text-xl font-bold transition-colors ${
-                          isSelected ? "text-emerald-700" : "text-gray-400 group-hover:text-emerald-600"
-                        }`}
-                      >
-                        {val}
-                      </span>
+                      {(() => {
+                        const ScaleIcon = skalaMinatIcons[val - 1]
+                        return <ScaleIcon className={`h-5 w-5 transition-colors ${isSelected ? "text-emerald-700" : "text-gray-400 group-hover:text-emerald-600"}`} />
+                      })()}
                       <span
                         className={`mt-1 text-center text-[10px] leading-tight transition-colors ${
                           isSelected ? "text-emerald-700 font-medium" : "text-gray-400 group-hover:text-emerald-600"

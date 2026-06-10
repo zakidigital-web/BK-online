@@ -10,12 +10,12 @@ import { useAuth } from "@/lib/auth-context"
 import { questions, hitungSkor, getTipeMBTI, getPersentase, labelDimensi, getDeskripsi } from "@/lib/asesmen/mbti"
 import { motion } from "framer-motion"
 import {
-  ArrowDown, ArrowLeft, ArrowUp, Brain, Check, ChevronDown, ChevronUp, Circle, Clock3, Compass, Loader2, Minus, Send, Sparkles, UserCircle, CheckCircle2, ClipboardList, Star,
+  ArrowDown, ArrowLeft, Brain, Check, Circle, Clock3, Compass, Frown, Loader2, Meh, Minus, Send, Smile, Sparkles, UserCircle, CheckCircle2, ClipboardList, Star,
 } from "lucide-react"
 
 
-const skalaLabel = ["Sangat Tidak Setuju", "Tidak Setuju", "Netral", "Setuju", "Sangat Setuju"]
-const skalaIcons = [ArrowDown, ChevronDown, Minus, ChevronUp, ArrowUp]
+const skalaLabel = ["Sgt Tdk Setuju", "Tidak Setuju", "Netral", "Setuju", "Sgt Setuju"]
+const skalaIcons = [Frown, Meh, Minus, Smile, Sparkles]
 
 const STORAGE_KEY = "bk_asesmen_mbti"
 
@@ -479,7 +479,7 @@ export function MbtiForm() {
                     const ScaleIcon = skalaIcons[val - 1]
                     return <ScaleIcon className="h-5 w-5" />
                   })()}
-                  <span className="text-[10px] mt-1">{skalaLabel[val - 1]}</span>
+                  <span className="text-[10px] mt-1 leading-tight">{skalaLabel[val - 1]}</span>
                 </Button>
               ))}
             </div>

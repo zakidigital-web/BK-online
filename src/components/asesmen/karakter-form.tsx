@@ -14,19 +14,17 @@ import { motion } from "framer-motion"
 import {
   ArrowDown,
   ArrowLeft,
-  ArrowUp,
   Bird,
   BookOpen,
   Brain,
   Check,
-  ChevronDown,
-  ChevronUp,
   Circle,
   ClipboardList,
   Clock3,
   Compass,
   Crown,
   Flag,
+  Frown,
   Gem,
   Handshake,
   Heart,
@@ -36,6 +34,7 @@ import {
   Lightbulb,
   Link2,
   Loader2,
+  Meh,
   Minus,
   Palette,
   Scale,
@@ -54,8 +53,8 @@ import {
 } from "lucide-react"
 
 
-const skalaLabel = ["Sangat Tidak Setuju", "Tidak Setuju", "Netral", "Setuju", "Sangat Setuju"]
-const skalaIcons = [ArrowDown, ChevronDown, Minus, ChevronUp, ArrowUp]
+const skalaLabel = ["Sgt Tdk Setuju", "Tidak Setuju", "Netral", "Setuju", "Sgt Setuju"]
+const skalaIcons = [Frown, Meh, Minus, Smile, Sparkles]
 
 const nilaiIcons = {
   bird: Bird,
@@ -518,7 +517,7 @@ export function KarakterForm() {
                     const ScaleIcon = skalaIcons[val - 1]
                     return <ScaleIcon className="h-5 w-5" />
                   })()}
-                  <span className="text-[10px] mt-1">{skalaLabel[val - 1]}</span>
+                  <span className="text-[10px] mt-1 leading-tight">{skalaLabel[val - 1]}</span>
                 </Button>
               ))}
             </div>
