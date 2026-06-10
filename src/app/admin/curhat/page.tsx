@@ -30,6 +30,18 @@ export default function AdminCurhatPage() {
 
   useEffect(() => { fetchAllMessages() }, [])
 
+  useEffect(() => {
+    const interval = setInterval(fetchAllMessages, 3000)
+    return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    if (!selectedId) { setFilteredMessages([]); return }
+    const filtered = messages.filter((m) => m.anonymousId === selectedId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    setFilteredMessages(filtered)
+  }, [messages, selectedId])
+
   async function fetchAllMessages() {
     try {
       const res = await fetch("/api/chat")
@@ -40,9 +52,6 @@ export default function AdminCurhatPage() {
 
   function selectConversation(id: string) {
     setSelectedId(id)
-    const filtered = messages.filter((m) => m.anonymousId === id)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-    setFilteredMessages(filtered)
   }
 
   async function sendReply() {

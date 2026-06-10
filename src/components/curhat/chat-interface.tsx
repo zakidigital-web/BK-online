@@ -90,6 +90,12 @@ export function ChatInterface() {
   }, [anonymousId])
 
   useEffect(() => {
+    if (!anonymousId) return
+    const interval = setInterval(() => fetchMessages(anonymousId), 3000)
+    return () => clearInterval(interval)
+  }, [anonymousId])
+
+  useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
