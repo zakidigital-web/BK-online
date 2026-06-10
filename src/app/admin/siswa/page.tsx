@@ -47,6 +47,8 @@ export default function AdminSiswaPage() {
 
   const [pendingUsers, setPendingUsers] = useState<{ id: string; name: string; email: string; createdAt: string }[]>([])
   const [pendingLoading, setPendingLoading] = useState(false)
+  const [allSiswa, setAllSiswa] = useState<SiswaData[]>([])
+  const [showUnmatched, setShowUnmatched] = useState(false)
 
   const massalFileRef = useRef<HTMLInputElement>(null)
   const [massalLoading, setMassalLoading] = useState(false)
@@ -101,8 +103,10 @@ export default function AdminSiswaPage() {
       setKelasList(list)
       const res2 = await fetch("/api/siswa")
       const data2 = await res2.json()
+      const all = data2.siswa || []
+      setAllSiswa(all)
       const counts: Record<string, number> = {}
-      for (const s of (data2.siswa || [])) {
+      for (const s of all) {
         counts[s.kelas] = (counts[s.kelas] || 0) + 1
       }
       setKelasCounts(counts)
@@ -322,7 +326,10 @@ export default function AdminSiswaPage() {
     }
   }
 
-  const filtered = siswa.filter((s) =>
+  const kelasNames = new Set(kelasList.map((k) => k.nama))
+  const unmatchedSiswa = allSiswa.filter((s) => !kelasNames.has(s.kelas))
+
+  const filtered = (showUnmatched ? unmatchedSiswa : siswa).filter((s) =>
     s.nama.toLowerCase().includes(search.toLowerCase())
   )
 
@@ -338,7 +345,9 @@ export default function AdminSiswaPage() {
         <div>
           <h1 className="text-xl font-bold text-gray-900">Data Siswa</h1>
           <p className="text-sm text-gray-500">
-            {selectedKelas ? `Kelas ${selectedKelas} — ${siswa.length} siswa` : `${kelasList.length} kelas terdaftar`}
+            {selectedKelas ? `Kelas ${selectedKelas} — ${siswa.length} siswa` :
+             showUnmatched ? "Siswa tanpa kelas" :
+             `${kelasList.length} kelas terdaftar${unmatchedSiswa.length > 0 ? ` · ${unmatchedSiswa.length} siswa tanpa kelas` : ""}`}
           </p>
         </div>
       </div>
@@ -376,7 +385,7 @@ export default function AdminSiswaPage() {
         </Card>
       )}
 
-      {!selectedKelas ? (
+      {!selectedKelas && !showUnmatched ? (
         <>
           {/* Toolbar kelas */}
           <div className="flex flex-wrap items-center gap-2">
@@ -428,6 +437,32 @@ export default function AdminSiswaPage() {
                 </motion.div>
               )
             })}
+
+            {/* Kartu siswa tanpa kelas */}
+            {unmatchedSiswa.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Card
+                  className="border-0 shadow-sm hover:shadow-md transition-all cursor-pointer hover:-translate-y-0.5 border-l-4 border-l-orange-400"
+                  onClick={() => setShowUnmatched(true)}
+                >
+                  <CardContent className="p-5">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-red-500 text-white mb-3">
+                      <Users className="h-5 w-5" />
+                    </div>
+                    <h3 className="font-bold text-gray-900 text-lg">Tanpa Kelas</h3>
+                    <p className="text-sm text-orange-600 mt-0.5 font-medium">
+                      {unmatchedSiswa.length} siswa tidak terdaftar di kelas mana pun
+                    </p>
+                    <div className="mt-3 flex items-center gap-1 text-xs font-medium text-orange-600 group-hover:gap-2 transition-all">
+                      Atur <ChevronRight className="h-3 w-3" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
           </div>
 
           {kelasList.length === 0 && (
@@ -441,21 +476,32 @@ export default function AdminSiswaPage() {
         </>
       ) : (
         <>
-          {/* Header kelas */}
+          {/* Header kelas / unmatched */}
           <div className="flex items-center gap-3 flex-wrap">
-            <Button variant="ghost" onClick={() => setSelectedKelas(null)} className="gap-1">
-              <ArrowLeft className="h-4 w-4" /> Kelas
+            <Button variant="ghost" onClick={() => { setSelectedKelas(null); setShowUnmatched(false) }} className="gap-1">
+              <ArrowLeft className="h-4 w-4" /> {showUnmatched ? "Kelas" : "Kelas"}
             </Button>
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-xs font-bold">
-                {selectedKelas}
+            {showUnmatched ? (
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-400 to-red-500 text-white text-xs font-bold">
+                  ?
+                </div>
+                <span className="font-semibold text-gray-900">Siswa Tanpa Kelas</span>
+                <Badge variant="secondary" className="text-xs">{unmatchedSiswa.length} siswa</Badge>
               </div>
-              <span className="font-semibold text-gray-900">Kelas {selectedKelas}</span>
-              <Badge variant="secondary" className="text-xs">{siswa.length} siswa</Badge>
-            </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-xs font-bold">
+                  {selectedKelas}
+                </div>
+                <span className="font-semibold text-gray-900">Kelas {selectedKelas}</span>
+                <Badge variant="secondary" className="text-xs">{siswa.length} siswa</Badge>
+              </div>
+            )}
           </div>
 
-          {/* Tambah & Import */}
+          {/* Tambah & Import (sembunyikan saat mode unmatched) */}
+          {!showUnmatched && (
           <Card className="border-0 shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
@@ -482,6 +528,23 @@ export default function AdminSiswaPage() {
               </div>
             </CardContent>
           </Card>
+          )}
+
+          {/* Info unmatched */}
+          {showUnmatched && (
+            <Card className="border-0 shadow-sm border-l-4 border-l-orange-400 bg-orange-50/30">
+              <CardContent className="p-4 flex items-start gap-3">
+                <Users className="h-5 w-5 text-orange-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-orange-800">Siswa ini memiliki kelas yang tidak terdaftar di sistem</p>
+                  <p className="text-xs text-orange-600 mt-1">
+                    Gunakan tombol edit <Pencil className="inline h-3 w-3" /> untuk mengubah kelas siswa ke kelas yang valid.
+                    Kelas bisa ditambahkan melalui tombol "Tambah Kelas" di halaman sebelumnya.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Search */}
           <div className="relative">
