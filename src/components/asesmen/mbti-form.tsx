@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
 import { questions, hitungSkor, getTipeMBTI, getPersentase, labelDimensi, getDeskripsi } from "@/lib/asesmen/mbti"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
+import { AssessmentMascot } from "@/components/asesmen/assessment-mascot"
 import {
   ArrowDown, ArrowLeft, Brain, Check, Circle, Clock3, Compass, Frown, Loader2, Meh, Minus, Send, Smile, Sparkles, UserCircle, CheckCircle2, ClipboardList, Star,
 } from "lucide-react"
@@ -209,81 +210,98 @@ export function MbtiForm() {
     const deskripsi = getDeskripsi(tipe)
     return (
       <div className="space-y-6">
-        <Card className="border-0 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-indigo-100">
-              <Brain className="h-10 w-10 text-indigo-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Tipe Kepribadian</h2>
+        <Card className="border-0 bg-gradient-to-br from-indigo-50 via-purple-50 to-white shadow-md overflow-hidden relative">
+          <CardContent className="p-6 text-center flex flex-col items-center">
+            <AssessmentMascot
+              character="zen"
+              mood="cheering"
+              size={110}
+              showSpeechBubble
+              message={`Analisis selesai, ${nama || "kamu"}! Tipe MBTI-mu adalah ${tipe}! 🤖✨`}
+              className="mb-2"
+            />
+            <h2 className="text-2xl font-bold text-gray-900 mt-2">Hasil Kepribadian MBTI</h2>
             <p className="mt-1 text-indigo-600 font-medium">{nama} · {kelas}</p>
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-indigo-600 px-6 py-2 text-xl font-bold text-white tracking-widest">
+            <div className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-2.5 text-2xl font-extrabold text-white tracking-widest shadow-md">
               {tipe}
             </div>
-            <p className="mt-3 text-2xl font-bold text-gray-800">{deskripsi.title}</p>
-            <p className="mt-2 text-sm text-gray-600 max-w-md mx-auto">{deskripsi.desc}</p>
+            <p className="mt-3 text-xl sm:text-2xl font-extrabold text-slate-800">{deskripsi.title}</p>
+            <p className="mt-2 text-sm text-slate-600 max-w-md mx-auto leading-relaxed">{deskripsi.desc}</p>
           </CardContent>
         </Card>
 
-        {Object.entries(persentase).map(([d, v]) => {
-          const lb = labelDimensi[d]
-          const isKiriDominan = v.kiri >= v.kanan
-          return (
-            <Card key={d} className="border-0 shadow-sm">
-              <CardContent className="p-4">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className={`text-xs font-semibold ${isKiriDominan ? "text-indigo-600" : "text-gray-400"}`}>{lb.kiri}</span>
-                  <span className={`text-xs font-semibold ${!isKiriDominan ? "text-indigo-600" : "text-gray-400"}`}>{lb.kanan}</span>
-                </div>
-                <div className="relative h-3 w-full overflow-hidden rounded-full bg-gray-100">
-                  <div className="absolute inset-y-0 left-0 rounded-full bg-indigo-500 transition-all" style={{ width: `${v.kiri}%` }} />
-                  <div className="absolute inset-y-0 right-0 rounded-full bg-purple-500 transition-all" style={{ width: `${v.kanan}%` }} />
-                </div>
-                <div className="mt-1 flex justify-between text-xs text-gray-400">
-                  <span>{v.kiri}%</span>
-                  <span>{d}</span>
-                  <span>{v.kanan}%</span>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
+        <div className="space-y-3">
+          {Object.entries(persentase).map(([d, v]) => {
+            const lb = labelDimensi[d]
+            const isKiriDominan = v.kiri >= v.kanan
+            return (
+              <Card key={d} className="border-0 shadow-sm bg-white rounded-2xl">
+                <CardContent className="p-4 sm:p-5">
+                  <div className="mb-2 flex items-center justify-between text-xs sm:text-sm font-bold">
+                    <span className={isKiriDominan ? "text-indigo-600" : "text-slate-400"}>
+                      {lb.kiri} ({v.kiri}%)
+                    </span>
+                    <span className={!isKiriDominan ? "text-purple-600" : "text-slate-400"}>
+                      ({v.kanan}%) {lb.kanan}
+                    </span>
+                  </div>
+                  <div className="relative h-3 w-full overflow-hidden rounded-full bg-slate-100 flex">
+                    <div
+                      className="h-full bg-indigo-500 transition-all duration-500 rounded-l-full"
+                      style={{ width: `${v.kiri}%` }}
+                    />
+                    <div
+                      className="h-full bg-purple-500 transition-all duration-500 rounded-r-full"
+                      style={{ width: `${v.kanan}%` }}
+                    />
+                  </div>
+                  <div className="mt-1.5 flex justify-between text-[11px] text-slate-400 font-medium">
+                    <span>Dimensi {d[0]}</span>
+                    <span>Dimensi {d[1]}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
 
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-4">
-            <h3 className="mb-2 font-semibold text-gray-900">Peran</h3>
-            <p className="text-sm text-gray-600">{deskripsi.role}</p>
-          </CardContent>
+        <Card className="border-0 shadow-sm bg-white rounded-2xl p-5">
+          <h3 className="mb-2 font-bold text-gray-900 text-sm">Peran Utama Kepribadian</h3>
+          <p className="text-sm text-gray-600 leading-relaxed">{deskripsi.role}</p>
         </Card>
 
-        <div className="grid grid-cols-2 gap-3">
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-4">
-              <h3 className="mb-2 text-sm font-semibold text-emerald-700">Kekuatan</h3>
-              <ul className="space-y-1">
-                {deskripsi.strengths.map((s) => (
-                  <li key={s} className="flex items-start gap-1.5 text-xs text-gray-600">
-                    <Check className="mt-0.5 h-3 w-3 shrink-0 text-emerald-500" /> {s}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card className="border-0 shadow-sm bg-emerald-50/50 border-emerald-100/60 rounded-2xl p-5">
+            <h3 className="mb-3 text-sm font-bold text-emerald-800 flex items-center gap-1.5">
+              <Check className="h-4 w-4 text-emerald-600" /> Kekuatan Alami
+            </h3>
+            <ul className="space-y-2">
+              {deskripsi.strengths.map((s) => (
+                <li key={s} className="flex items-start gap-2 text-xs text-emerald-900/90 leading-snug">
+                  <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ul>
           </Card>
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-4">
-              <h3 className="mb-2 text-sm font-semibold text-amber-700">Kelemahan</h3>
-              <ul className="space-y-1">
-                {deskripsi.weaknesses.map((s) => (
-                  <li key={s} className="flex items-start gap-1.5 text-xs text-gray-600">
-                    <Circle className="mt-0.5 h-3 w-3 shrink-0 text-amber-400" /> {s}
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
+
+          <Card className="border-0 shadow-sm bg-amber-50/50 border-amber-100/60 rounded-2xl p-5">
+            <h3 className="mb-3 text-sm font-bold text-amber-800 flex items-center gap-1.5">
+              <Sparkles className="h-4 w-4 text-amber-600" /> Area Pengembangan
+            </h3>
+            <ul className="space-y-2">
+              {deskripsi.weaknesses.map((s) => (
+                <li key={s} className="flex items-start gap-2 text-xs text-amber-900/90 leading-snug">
+                  <Circle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ul>
           </Card>
         </div>
 
-        <Button variant="outline" className="w-full" onClick={reset}>
-          Ambil Lagi
+        <Button variant="outline" className="w-full h-11 rounded-xl font-medium" onClick={reset}>
+          Ulangi Tes MBTI
         </Button>
       </div>
     )
@@ -301,14 +319,22 @@ export function MbtiForm() {
     if (existingStatus.retakeStatus === "pending") {
       return (
         <div className="max-w-lg mx-auto space-y-4">
-          <Card className="border-0 bg-gradient-to-br from-amber-50 to-yellow-50 shadow-sm">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
-                <Clock3 className="h-7 w-7 text-amber-600" />
+          <Card className="border-0 bg-gradient-to-br from-amber-50 to-yellow-50 shadow-sm overflow-hidden">
+            <CardContent className="p-6 text-center flex flex-col items-center">
+              <AssessmentMascot
+                character="zen"
+                mood="thinking"
+                size={100}
+                showSpeechBubble
+                message="Zen sedang memonitor verifikasi retake ya!"
+                className="mb-2"
+              />
+              <div className="mx-auto my-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                <Clock3 className="h-6 w-6 text-amber-600" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Menunggu Persetujuan</h2>
-              <p className="mt-2 text-sm text-gray-500">
-                Permintaan retake asesmen sedang diproses. Silakan tunggu persetujuan dari guru BK atau Admin.
+              <h2 className="text-xl font-bold text-gray-900">Menunggu Persetujuan Retake</h2>
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed max-w-sm">
+                Permintaan retake MBTI sedang dalam proses peninjauan guru BK. Silakan periksa kembali nanti.
               </p>
             </CardContent>
           </Card>
@@ -319,17 +345,25 @@ export function MbtiForm() {
     if (existingStatus.retakeStatus !== "approved") {
       return (
         <div className="max-w-lg mx-auto space-y-4">
-          <Card className="border-0 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-sm">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100">
-                <ClipboardList className="h-7 w-7 text-indigo-600" />
+          <Card className="border-0 bg-gradient-to-br from-indigo-50 via-purple-50 to-white shadow-sm overflow-hidden">
+            <CardContent className="p-6 text-center flex flex-col items-center">
+              <AssessmentMascot
+                character="zen"
+                mood="happy"
+                size={100}
+                showSpeechBubble
+                message="Tipe MBTI-mu sudah tersimpan rapi!"
+                className="mb-2"
+              />
+              <div className="mx-auto my-3 flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100">
+                <ClipboardList className="h-6 w-6 text-indigo-600" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Asesmen Sudah Selesai</h2>
-              <p className="mt-2 text-sm text-gray-500">
-                Kamu sudah mengerjakan asesmen ini. Untuk mengulang, hubungi guru BK atau Admin.
+              <h2 className="text-xl font-bold text-gray-900">Tes MBTI Sudah Selesai</h2>
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed max-w-sm">
+                Kamu sudah menyelesaikan tes ini. Untuk mengerjakan ulang, kamu dapat mengajukan permintaan retake kepada guru BK.
               </p>
               <div className="mt-6 flex gap-3 justify-center">
-                <Button onClick={requestRetake} disabled={sendingRetake} className="bg-indigo-600 hover:bg-indigo-700 gap-2">
+                <Button onClick={requestRetake} disabled={sendingRetake} className="bg-indigo-600 hover:bg-indigo-700 gap-2 shadow-sm rounded-xl">
                   {sendingRetake ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   {sendingRetake ? "Mengirim..." : "Minta Retake"}
                 </Button>
@@ -345,47 +379,73 @@ export function MbtiForm() {
     return (
       <div className="space-y-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-          <Card className="border-0 bg-gradient-to-br from-indigo-500 to-purple-600 overflow-hidden shadow-md">
-            <CardContent className="p-6 text-center text-white">
-              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur">
-                <Brain className="h-10 w-10" />
+          <Card className="border-0 bg-gradient-to-br from-indigo-500 via-purple-600 to-violet-700 overflow-hidden shadow-lg text-white relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+            <CardContent className="p-6 sm:p-8 text-center flex flex-col items-center relative z-10">
+              <AssessmentMascot
+                character="zen"
+                mood="excited"
+                size={130}
+                showSpeechBubble
+                message="Halo! Aku Zen, mari analisis kepribadian MBTI-mu! 🤖⚡"
+                className="mb-3"
+              />
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="bg-white/20 text-white border-white/30 text-xs px-3 py-1 font-semibold">
+                  Tes 16 Tipe Kepribadian MBTI
+                </Badge>
+                <span className="rounded-full bg-white/25 px-2.5 py-0.5 text-[10px] font-bold text-white uppercase tracking-wider">
+                  Opsional
+                </span>
               </div>
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <h2 className="text-2xl font-bold">Kenali Kepribadianmu</h2>
-                <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-medium text-white">Opsional</span>
-              </div>
-              <p className="text-indigo-100 leading-relaxed">
-                Temukan tipe kepribadian MBTI-mu! INTJ, INFP, ENFJ, atau yang lainnya?
-                Yuk cari tahu siapa dirimu yang sebenarnya.
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Kenali Potensi Kognitif MBTI</h2>
+              <p className="text-indigo-100 leading-relaxed max-w-md text-sm sm:text-base">
+                Temukan kode 4-huruf kepribadianmu! Apakah kamu seorang INTJ sang Ahli Strategi, ENFP sang Inspirator, atau INFP sang Idealis?
               </p>
-              <div className="mt-6 flex items-center justify-center gap-6 text-xs text-indigo-200">
-                <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5" /> {totalSteps} pertanyaan</span>
-                <span className="flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" /> ~5 menit</span>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-indigo-100 bg-black/10 px-4 py-2 rounded-full backdrop-blur-sm">
+                <span className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-yellow-300" /> {totalSteps} Pertanyaan</span>
+                <span className="flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5 text-cyan-300" /> ~5 Menit Santai</span>
+                <span className="flex items-center gap-1.5"><Brain className="h-3.5 w-3.5 text-purple-200" /> Analisis Lengkap</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-4 space-y-4">
-              <div className="flex items-center gap-2">
+          <Card className="border-0 shadow-sm bg-white/90 backdrop-blur-sm rounded-2xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base sm:text-lg flex items-center gap-2 text-slate-800">
                 <UserCircle className="h-5 w-5 text-indigo-600" />
-                <span className="text-sm font-semibold text-gray-900">Identitas Diri</span>
-              </div>
-              <div className="space-y-2">
-                <Label>Nama Lengkap</Label>
-                <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-700">
-                  {nama || "Mengambil data..."}
+                Data Peserta
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-slate-500 font-medium">Nama Lengkap</Label>
+                  <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 text-sm font-semibold text-slate-800">
+                    {nama || "Mengambil data..."}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-slate-500 font-medium">Kelas</Label>
+                  <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 text-sm font-semibold text-slate-800">
+                    {kelas || (loadingSiswa ? "Memuat..." : "Kelas belum diatur, hubungi Guru BK")}
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Kelas</Label>
-                <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-700">
-                  {kelas || (loadingSiswa ? "Memuat..." : "Kelas belum diatur, hubungi Guru BK")}
-                </div>
+
+              <div className="rounded-xl bg-indigo-50/80 p-3.5 text-xs text-indigo-800 border border-indigo-100 flex items-start gap-2.5">
+                <Sparkles className="h-4 w-4 text-indigo-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Tips dari Zen:</strong> Jangan terlalu lama berpikir pada satu pertanyaan. Jawaban pertama yang melintas biasanya adalah preferensi alamimu!
+                </span>
               </div>
-              <Button className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2" onClick={() => { setShowIntro(false); setMode("kuesioner") }}
-                disabled={!nama || !kelas || loadingSiswa}>
-                {loadingSiswa ? "Memuat..." : "Mulai Tes"} <Brain className="h-4 w-4" />
+
+              <Button
+                className="w-full h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-md gap-2 transition-all hover:scale-[1.01]"
+                onClick={() => { setShowIntro(false); setMode("kuesioner") }}
+                disabled={!nama || !kelas || loadingSiswa}
+              >
+                {loadingSiswa ? "Memuat..." : "Mulai Bersama Zen"} <Brain className="h-4 w-4" />
               </Button>
             </CardContent>
           </Card>
@@ -397,36 +457,52 @@ export function MbtiForm() {
   if (mode === "review") {
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100">
-            <ClipboardList className="h-5 w-5 text-indigo-600" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-gray-900">Review Jawaban</h1>
-            <p className="text-sm text-gray-500">Periksa kembali jawaban sebelum menyimpan</p>
+        <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100 flex items-center gap-4">
+          <AssessmentMascot
+            character="zen"
+            mood="thinking"
+            size={58}
+            className="shrink-0"
+          />
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-bold text-slate-900 flex items-center gap-1.5">
+              <ClipboardList className="h-4 w-4 text-indigo-600" />
+              Review Jawaban Kuesioner
+            </h1>
+            <p className="text-xs text-slate-500">
+              Periksa kembali seluruh pilihanmu sebelum Zen mengkalkulasi tipe MBTI
+            </p>
           </div>
         </div>
+
         <div className="space-y-2">
           {questions.map((q, i) => (
-            <Card key={q.id} className="border-0 shadow-sm">
-              <CardContent className="p-3 flex items-center justify-between">
+            <Card key={q.id} className="border-0 shadow-sm bg-white rounded-xl">
+              <CardContent className="p-3.5 flex items-center justify-between">
                 <div className="flex-1 min-w-0 mr-3">
-                  <span className="text-xs font-medium text-gray-400">{i + 1}.</span>
-                  <span className="text-sm text-gray-700 ml-1">{q.text}</span>
+                  <span className="text-xs font-bold text-indigo-500">{i + 1}.</span>
+                  <span className="text-sm text-slate-700 ml-1.5">{q.text}</span>
                 </div>
-                <Badge variant={jawaban[q.id] ? "default" : "outline"} className="shrink-0 text-xs">
-                  {jawaban[q.id] ? skalaLabel[jawaban[q.id] - 1] : "—"}
+                <Badge variant={jawaban[q.id] ? "default" : "outline"} className="shrink-0 text-xs rounded-lg">
+                  {jawaban[q.id] ? skalaLabel[jawaban[q.id] - 1] : "Belum diisi"}
                 </Badge>
               </CardContent>
             </Card>
           ))}
         </div>
-        <div className="flex justify-between">
-          <Button variant="ghost" onClick={goBack} size="sm">
+
+        <div className="flex justify-between items-center pt-2">
+          <Button variant="ghost" onClick={goBack} size="sm" className="rounded-xl text-slate-600">
             <ArrowLeft className="mr-1 h-4 w-4" /> Kembali
           </Button>
-          <Button onClick={submit} disabled={submitting} className="bg-indigo-600 hover:bg-indigo-700 gap-2" size="sm">
-            {submitting ? "Menyimpan..." : "Simpan & Lihat Hasil"} <Check className="h-4 w-4" />
+          <Button
+            onClick={submit}
+            disabled={submitting}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white gap-2 rounded-xl shadow-sm px-4"
+            size="sm"
+          >
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            {submitting ? "Menganalisis..." : "Kalkulasi & Lihat Hasil MBTI"}
           </Button>
         </div>
       </div>
@@ -439,63 +515,132 @@ export function MbtiForm() {
     return null
   }
 
+  const progressPercent = Math.round((answeredCount / totalSteps) * 100)
+  const encouragementText =
+    progressPercent === 0
+      ? "Pilih respon yang paling mendekati kebiasaanmu~"
+      : progressPercent < 40
+      ? "Analisis pola berpikirmu sedang diproses! 🤖⚡"
+      : progressPercent < 80
+      ? "Hebat! Profil MBTI-mu semakin terbentuk! 🔮"
+      : "Langkah terakhir sebelum review jawaban! ✨"
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100">
-          <Brain className="h-5 w-5 text-indigo-600" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <h1 className="text-lg font-bold text-gray-900 truncate">Tes Kepribadian MBTI</h1>
-            <span className="shrink-0 text-sm font-medium text-gray-400 ml-2">{step + 1}/{totalSteps}</span>
+      {/* Top Header Card with Companion Bar */}
+      <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center gap-4">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <AssessmentMascot
+            character="zen"
+            mood={progressPercent > 50 ? "excited" : "happy"}
+            size={58}
+            className="shrink-0"
+          />
+          <div className="flex-1 sm:hidden">
+            <p className="text-xs font-semibold text-indigo-700">Zen Sahabat MBTI</p>
+            <p className="text-[11px] text-slate-500 line-clamp-1">{encouragementText}</p>
           </div>
+        </div>
+
+        <div className="flex-1 w-full min-w-0">
+          <div className="flex items-center justify-between mb-1.5">
+            <div>
+              <h1 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5">
+                <Brain className="h-4 w-4 text-indigo-600" />
+                Tes Kepribadian MBTI
+              </h1>
+              <p className="text-xs text-slate-500 hidden sm:block">{encouragementText}</p>
+            </div>
+            <div className="text-right">
+              <span className="text-sm font-extrabold text-indigo-600">{progressPercent}%</span>
+              <span className="text-xs font-medium text-slate-400 ml-1.5">({step + 1}/{totalSteps})</span>
+            </div>
+          </div>
+
           <ProgressDots states={dotStates} onJump={jumpTo} />
-          <div className="flex items-center justify-center gap-3 text-xs">
-            <span className="flex items-center gap-1 text-indigo-600">
+
+          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+            <span className="flex items-center gap-1 text-indigo-600 font-medium">
               <CheckCircle2 className="h-3 w-3" /> {answeredCount} terjawab
             </span>
-            <span className="flex items-center gap-1 text-gray-400">
+            <span className="flex items-center gap-1 text-slate-400">
               <Circle className="h-3 w-3" /> {totalSteps - answeredCount} tersisa
             </span>
           </div>
         </div>
       </div>
 
-      <motion.div key={step} initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }}>
-        <Card className="border-0 shadow-sm overflow-hidden">
-          <div className="h-1.5 bg-gradient-to-r from-indigo-400 to-purple-500" />
-          <CardContent className="p-6 text-center">
-            <Badge variant="secondary" className="mb-3 text-xs">
-              {dimensiLabel[q.dimensi] || q.dimensi}
-            </Badge>
-            <h2 className="mb-6 text-lg font-semibold text-gray-900">{q.text}</h2>
-            <div className="grid grid-cols-5 gap-2">
-              {[1, 2, 3, 4, 5].map((val) => (
-                <Button key={val} variant={jawaban[q.id] === val ? "default" : "outline"}
-                  className={`flex flex-col items-center h-20 ${jawaban[q.id] === val ? "bg-indigo-600" : ""}`}
-                  onClick={() => answer(val)}>
-                  {(() => {
-                    const ScaleIcon = skalaIcons[val - 1]
-                    return <ScaleIcon className="h-5 w-5" />
-                  })()}
-                  <span className="text-[10px] mt-1 leading-tight">{skalaLabel[val - 1]}</span>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, x: 25 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -25 }}
+          transition={{ duration: 0.18 }}
+        >
+          <Card className="border-0 shadow-sm overflow-hidden bg-white rounded-2xl">
+            <div className="h-1.5 bg-gradient-to-r from-indigo-400 via-purple-500 to-violet-500" />
+            <CardContent className="p-5 sm:p-7">
+              <div className="mb-4">
+                <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  Dimensi {dimensiLabel[q.dimensi] || q.dimensi}
+                </span>
+              </div>
 
-      <div className="flex justify-between items-center">
-        <Button variant="ghost" onClick={goBack} disabled={step === 0} size="sm">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-relaxed mb-6">
+                {q.text}
+              </h2>
+
+              <div className="grid grid-cols-5 gap-2 sm:gap-3">
+                {[1, 2, 3, 4, 5].map((val) => {
+                  const isSelected = jawaban[q.id] === val
+                  const ScaleIcon = skalaIcons[val - 1]
+                  return (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => answer(val)}
+                      className={`group relative flex flex-col items-center justify-center rounded-2xl border-2 p-2.5 sm:p-3.5 transition-all duration-200 cursor-pointer ${
+                        isSelected
+                          ? "border-indigo-500 bg-indigo-50/80 text-indigo-900 shadow-md scale-[1.03]"
+                          : "border-slate-100 bg-slate-50/70 hover:border-indigo-200 hover:bg-indigo-50/30 hover:scale-[1.02] text-slate-500"
+                      }`}
+                    >
+                      <ScaleIcon
+                        className={`h-5 w-5 sm:h-6 sm:w-6 transition-transform group-hover:scale-110 ${
+                          isSelected ? "text-indigo-600" : "text-slate-400 group-hover:text-indigo-500"
+                        }`}
+                      />
+                      <span
+                        className={`mt-1.5 text-center text-[10px] sm:text-xs leading-tight font-medium ${
+                          isSelected ? "text-indigo-800 font-bold" : "text-slate-500 group-hover:text-slate-800"
+                        }`}
+                      >
+                        {skalaLabel[val - 1]}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </AnimatePresence>
+
+      <div className="flex justify-between items-center pt-2">
+        <Button variant="ghost" onClick={goBack} disabled={step === 0} size="sm" className="rounded-xl text-slate-600">
           <ArrowLeft className="mr-1 h-4 w-4" /> Sebelumnya
         </Button>
-        <Button variant="outline" size="sm" onClick={() => {
-          if (step < totalSteps - 1) setStep((s) => s + 1)
-          else setMode("review")
-        }}>
-          Lewati <ArrowDown className="ml-1 h-3 w-3" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            if (step < totalSteps - 1) setStep((s) => s + 1)
+            else setMode("review")
+          }}
+          className="rounded-xl text-indigo-700 border-indigo-200 hover:bg-indigo-50"
+        >
+          {step === totalSteps - 1 ? "Review Jawaban" : "Lewati"} <ArrowDown className="ml-1 h-3.5 w-3.5" />
         </Button>
       </div>
     </div>

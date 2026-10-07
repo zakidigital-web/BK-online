@@ -1,6 +1,6 @@
 "use client"
 
-import { MessageCircleHeart, Brain, Sparkles, UserCircle, Home, LayoutDashboard, FileText, Users, Settings, BarChart3, LogOut, GraduationCap, ClipboardList, BookOpen, HelpCircle, RotateCcw } from "lucide-react"
+import { MessageCircleHeart, Brain, Sparkles, UserCircle, Home, LayoutDashboard, FileText, Users, Settings, BarChart3, LogOut, GraduationCap, ClipboardList, BookOpen, HelpCircle, RotateCcw, Compass } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
 
 const studentItems = [
+  { href: "/asesmen", icon: Compass, label: "Pusat Asesmen" },
   { href: "/curhat", icon: MessageCircleHeart, label: "Curhat Anonim" },
   { href: "/asesmen/minat-bakat", icon: Brain, label: "Minat Bakat" },
   { href: "/asesmen/psikologi", icon: Sparkles, label: "Psikologi" },

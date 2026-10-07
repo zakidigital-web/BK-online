@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
 import { questions, hitungSkor, getTipeKarakter, labelDimensiKarakter, nilaiPersonal } from "@/lib/asesmen/karakter"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
+import { AssessmentMascot } from "@/components/asesmen/assessment-mascot"
 import {
   ArrowDown,
   ArrowLeft,
@@ -274,55 +275,70 @@ export function KarakterForm() {
   if (mode === "hasil" && hasil) {
     return (
       <div className="space-y-6">
-        <Card className="border-0 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-100">
-              <Sparkles className="h-8 w-8 text-indigo-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Profil Karakter</h2>
-            <p className="mt-1 text-indigo-600 font-medium">{nama} · {kelas}</p>
-            <p className="mt-2 text-sm text-gray-500">{getTipeKarakter(hasil)}</p>
+        <Card className="border-0 bg-gradient-to-br from-amber-50 via-orange-50 to-white shadow-md overflow-hidden relative">
+          <CardContent className="p-6 text-center flex flex-col items-center">
+            <AssessmentMascot
+              character="sparky"
+              mood="cheering"
+              size={110}
+              showSpeechBubble
+              message={`Luar biasa, ${nama || "kamu"}! Karakter hebatmu terpancar! 🦊⭐`}
+              className="mb-2"
+            />
+            <h2 className="text-2xl font-bold text-gray-900 mt-2">Profil Karakter Diri</h2>
+            <p className="mt-1 text-amber-600 font-medium">{nama} · {kelas}</p>
+            <Badge className="mt-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm px-3.5 py-1 shadow-sm font-semibold">
+              {getTipeKarakter(hasil)}
+            </Badge>
           </CardContent>
         </Card>
 
-        {Object.entries(hasil).map(([k, v]) => (
-          <Card key={k} className="border-0 shadow-sm">
-            <CardContent className="p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="font-semibold text-gray-900">{labelDimensiKarakter[k]}</span>
-                <span className={`text-lg font-bold ${v >= 60 ? "text-indigo-600" : v >= 40 ? "text-amber-500" : "text-gray-400"}`}>{v}%</span>
-              </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
-                <div className={`h-full rounded-full transition-all ${v >= 60 ? "bg-indigo-500" : v >= 40 ? "bg-amber-400" : "bg-gray-300"}`}
-                  style={{ width: `${v}%` }} />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {Object.entries(hasil).map(([k, v]) => (
+            <Card key={k} className="border-0 shadow-sm bg-white rounded-2xl">
+              <CardContent className="p-4 sm:p-5">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="font-bold text-gray-900 text-sm">{labelDimensiKarakter[k]}</span>
+                  <span className={`text-base font-extrabold ${v >= 60 ? "text-amber-600" : v >= 40 ? "text-orange-500" : "text-slate-400"}`}>
+                    {v}%
+                  </span>
+                </div>
+                <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      v >= 60 ? "bg-amber-500" : v >= 40 ? "bg-orange-400" : "bg-slate-300"
+                    }`}
+                    style={{ width: `${v}%` }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
         {selectedValues.length > 0 && (
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-4">
-              <h3 className="mb-3 font-semibold text-gray-900">Nilai Personalmu</h3>
-              <div className="flex flex-wrap gap-2">
-                {selectedValues.map((id) => {
-                  const v = nilaiPersonal.find((n) => n.id === id)
-                  if (!v) return null
-                  const ValueIcon = nilaiIcons[v.iconKey as keyof typeof nilaiIcons] ?? Circle
-                  return (
-                    <Badge key={id} className="bg-indigo-100 text-indigo-700 text-sm">
-                      <ValueIcon className="mr-1 h-3.5 w-3.5" />
-                      {v.label}
-                    </Badge>
-                  )
-                })}
-              </div>
-            </CardContent>
+          <Card className="border-0 shadow-sm bg-white rounded-2xl p-5">
+            <h3 className="mb-3 font-bold text-gray-900 flex items-center gap-2">
+              <Star className="h-4 w-4 text-amber-500" /> Nilai Personal Utamamu
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {selectedValues.map((id) => {
+                const v = nilaiPersonal.find((n) => n.id === id)
+                if (!v) return null
+                const ValueIcon = nilaiIcons[v.iconKey as keyof typeof nilaiIcons] ?? Circle
+                return (
+                  <Badge key={id} className="bg-amber-100/80 text-amber-800 border-amber-200 text-xs px-3 py-1 font-semibold rounded-xl flex items-center gap-1.5">
+                    <ValueIcon className="h-3.5 w-3.5 text-amber-600" />
+                    {v.label}
+                  </Badge>
+                )
+              })}
+            </div>
           </Card>
         )}
 
-        <Button variant="outline" className="w-full" onClick={reset}>
-          Ambil Lagi
+        <Button variant="outline" className="w-full h-11 rounded-xl font-medium" onClick={reset}>
+          Ulangi Asesmen Karakter
         </Button>
       </div>
     )
@@ -331,7 +347,7 @@ export function KarakterForm() {
   if (checkingStatus) {
     return (
       <div className="flex items-center justify-center min-h-[40vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
       </div>
     )
   }
@@ -340,14 +356,22 @@ export function KarakterForm() {
     if (existingStatus.retakeStatus === "pending") {
       return (
         <div className="max-w-lg mx-auto space-y-4">
-          <Card className="border-0 bg-gradient-to-br from-amber-50 to-yellow-50 shadow-sm">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
-                <Clock3 className="h-7 w-7 text-amber-600" />
+          <Card className="border-0 bg-gradient-to-br from-amber-50 to-yellow-50 shadow-sm overflow-hidden">
+            <CardContent className="p-6 text-center flex flex-col items-center">
+              <AssessmentMascot
+                character="sparky"
+                mood="thinking"
+                size={100}
+                showSpeechBubble
+                message="Sparky setia menunggumu di sini ya!"
+                className="mb-2"
+              />
+              <div className="mx-auto my-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                <Clock3 className="h-6 w-6 text-amber-600" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Menunggu Persetujuan</h2>
-              <p className="mt-2 text-sm text-gray-500">
-                Permintaan retake asesmen sedang diproses. Silakan tunggu persetujuan dari guru BK atau Admin.
+              <h2 className="text-xl font-bold text-gray-900">Menunggu Persetujuan Retake</h2>
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed max-w-sm">
+                Permintaan retake asesmen karakter sedang ditinjau oleh guru BK. Silakan tunggu konfirmasi.
               </p>
             </CardContent>
           </Card>
@@ -358,17 +382,25 @@ export function KarakterForm() {
     if (existingStatus.retakeStatus !== "approved") {
       return (
         <div className="max-w-lg mx-auto space-y-4">
-          <Card className="border-0 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-sm">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100">
-                <ClipboardList className="h-7 w-7 text-indigo-600" />
+          <Card className="border-0 bg-gradient-to-br from-amber-50 via-orange-50 to-white shadow-sm overflow-hidden">
+            <CardContent className="p-6 text-center flex flex-col items-center">
+              <AssessmentMascot
+                character="sparky"
+                mood="happy"
+                size={100}
+                showSpeechBubble
+                message="Karakter dirimu sudah tercatat!"
+                className="mb-2"
+              />
+              <div className="mx-auto my-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                <ClipboardList className="h-6 w-6 text-amber-600" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Asesmen Sudah Selesai</h2>
-              <p className="mt-2 text-sm text-gray-500">
-                Kamu sudah mengerjakan asesmen ini. Untuk mengulang, hubungi guru BK atau Admin.
+              <h2 className="text-xl font-bold text-gray-900">Asesmen Karakter Selesai</h2>
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed max-w-sm">
+                Kamu sudah melengkapi profil karakter diri. Jika ingin merefleksikan kembali nilaimu, kamu dapat mengajukan retake.
               </p>
               <div className="mt-6 flex gap-3 justify-center">
-                <Button onClick={requestRetake} disabled={sendingRetake} className="bg-indigo-600 hover:bg-indigo-700 gap-2">
+                <Button onClick={requestRetake} disabled={sendingRetake} className="bg-amber-600 hover:bg-amber-700 gap-2 shadow-sm rounded-xl text-white">
                   {sendingRetake ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   {sendingRetake ? "Mengirim..." : "Minta Retake"}
                 </Button>
@@ -384,46 +416,68 @@ export function KarakterForm() {
     return (
       <div className="space-y-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-          <Card className="border-0 bg-gradient-to-br from-indigo-500 to-purple-600 overflow-hidden shadow-md">
-            <CardContent className="p-6 text-center text-white">
-              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur">
-                <Compass className="h-10 w-10" />
-              </div>
-              <h2 className="text-2xl font-bold mb-2">Eksplorasi Dirimu</h2>
-              <p className="text-indigo-100 leading-relaxed">
-                Siapa dirimu sebenarnya? Yuk ikuti petualangan ini untuk mengenali
-                karakter, nilai-nilai personal, dan kekuatan unik dalam dirimu!
+          <Card className="border-0 bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 overflow-hidden shadow-lg text-white relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+            <CardContent className="p-6 sm:p-8 text-center flex flex-col items-center relative z-10">
+              <AssessmentMascot
+                character="sparky"
+                mood="excited"
+                size={130}
+                showSpeechBubble
+                message="Halo! Aku Sparky, yuk temukan keunikan karaktermu! 🦊🔥"
+                className="mb-3"
+              />
+              <Badge className="bg-white/20 text-white border-white/30 text-xs px-3 py-1 font-semibold mb-2">
+                Asesmen Karakter Diri & Nilai Personal
+              </Badge>
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Eksplorasi Karakter Diri</h2>
+              <p className="text-amber-100 leading-relaxed max-w-md text-sm sm:text-base">
+                Siapakah dirimu sebenarnya? Kenali 5 dimensi kepribadian dan pilih nilai-nilai hidup yang paling menggambarkan prinsipmu!
               </p>
-              <div className="mt-6 flex items-center justify-center gap-6 text-xs text-indigo-200">
-                <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5" /> {totalSteps + 1} tahap</span>
-                <span className="flex items-center gap-1"><Clock3 className="h-3.5 w-3.5" /> ~7 menit</span>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-amber-100 bg-black/10 px-4 py-2 rounded-full backdrop-blur-sm">
+                <span className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-yellow-300" /> {totalSteps + 1} Tahap</span>
+                <span className="flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5 text-cyan-300" /> ~5 Menit Seru</span>
+                <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-orange-200" /> Nilai Personal</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <UserCircle className="h-5 w-5 text-indigo-600" />
-                Identitas Diri
+          <Card className="border-0 shadow-sm bg-white/90 backdrop-blur-sm rounded-2xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base sm:text-lg flex items-center gap-2 text-slate-800">
+                <UserCircle className="h-5 w-5 text-amber-600" />
+                Identitas Peserta
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Nama Lengkap</Label>
-                <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-700">
-                  {nama || "Mengambil data..."}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-slate-500 font-medium">Nama Lengkap</Label>
+                  <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 text-sm font-semibold text-slate-800">
+                    {nama || "Mengambil data..."}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-slate-500 font-medium">Kelas</Label>
+                  <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 text-sm font-semibold text-slate-800">
+                    {kelas || (loadingSiswa ? "Memuat..." : "Kelas belum diatur, hubungi Guru BK")}
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Kelas</Label>
-                <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-700">
-                  {kelas || (loadingSiswa ? "Memuat..." : "Kelas belum diatur, hubungi Guru BK")}
-                </div>
+
+              <div className="rounded-xl bg-amber-50/80 p-3.5 text-xs text-amber-800 border border-amber-100 flex items-start gap-2.5">
+                <Sparkles className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Tips dari Sparky:</strong> Karakter adalah kekuatan unikmu. Percaya diri dan pilih yang paling mewakili dirimu yang sesungguhnya!
+                </span>
               </div>
-              <Button className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2" onClick={() => { setShowIntro(false); setMode("kuesioner") }}
-                disabled={!nama || !kelas || loadingSiswa}>
-                {loadingSiswa ? "Memuat..." : "Mulai Eksplorasi"} <Compass className="h-4 w-4" />
+
+              <Button
+                className="w-full h-11 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold rounded-xl shadow-md gap-2 transition-all hover:scale-[1.01]"
+                onClick={() => { setShowIntro(false); setMode("kuesioner") }}
+                disabled={!nama || !kelas || loadingSiswa}
+              >
+                {loadingSiswa ? "Memuat..." : "Mulai Bersama Sparky"} <Compass className="h-4 w-4" />
               </Button>
             </CardContent>
           </Card>
@@ -435,40 +489,70 @@ export function KarakterForm() {
   if (mode === "nilai") {
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100">
-            <Sparkles className="h-5 w-5 text-indigo-600" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-gray-900">Nilai Personal</h1>
-            <p className="text-xs text-gray-500">Pilih 5 nilai yang paling mewakilimu</p>
+        {/* Companion Header */}
+        <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100 flex items-center gap-4">
+          <AssessmentMascot
+            character="sparky"
+            mood={selectedValues.length === 5 ? "cheering" : "excited"}
+            size={58}
+            className="shrink-0"
+          />
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-bold text-slate-900 flex items-center gap-1.5">
+              <Sparkles className="h-4 w-4 text-amber-500" />
+              Pilih 5 Nilai Personal Utama
+            </h1>
+            <p className="text-xs text-slate-500">
+              {selectedValues.length === 5
+                ? "Hebat! 5 nilai terpilih, yuk simpan hasilnya!"
+                : `Pilih nilai yang paling penting bagimu (${selectedValues.length}/5 terpilih)`}
+            </p>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          {nilaiPersonal.map((n) => (
-            (() => {
-              const ValueIcon = nilaiIcons[n.iconKey as keyof typeof nilaiIcons] ?? Circle
-              return (
-            <Button key={n.id} variant={selectedValues.includes(n.id) ? "default" : "outline"}
-              className={`flex flex-col items-center h-20 ${selectedValues.includes(n.id) ? "bg-indigo-600" : ""}`}
-              onClick={() => toggleValue(n.id)}>
-              <ValueIcon className="h-5 w-5" />
-              <span className="text-[10px] mt-1">{n.label}</span>
-            </Button>
-              )
-            })()
-          ))}
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          {nilaiPersonal.map((n) => {
+            const ValueIcon = nilaiIcons[n.iconKey as keyof typeof nilaiIcons] ?? Circle
+            const isSelected = selectedValues.includes(n.id)
+            return (
+              <button
+                key={n.id}
+                type="button"
+                onClick={() => toggleValue(n.id)}
+                className={`group flex items-center gap-2.5 rounded-2xl border-2 p-3 transition-all cursor-pointer ${
+                  isSelected
+                    ? "border-amber-500 bg-amber-50/80 text-amber-900 shadow-sm scale-[1.02]"
+                    : "border-slate-100 bg-white hover:border-amber-200 hover:bg-amber-50/30 text-slate-700"
+                }`}
+              >
+                <div
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all ${
+                    isSelected ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-400 group-hover:text-amber-500"
+                  }`}
+                >
+                  <ValueIcon className="h-4 w-4" />
+                </div>
+                <span className="text-xs font-semibold leading-tight text-left">
+                  {n.label}
+                </span>
+              </button>
+            )
+          })}
         </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-400">{selectedValues.length}/5 dipilih</span>
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => setMode("kuesioner")} size="sm">
-              <ArrowLeft className="mr-1 h-4 w-4" /> Kembali
-            </Button>
-            <Button onClick={submit} disabled={submitting || selectedValues.length === 0} className="bg-indigo-600 hover:bg-indigo-700 gap-2" size="sm">
-              {submitting ? "Menyimpan..." : "Lihat Hasil"} <Check className="h-4 w-4" />
-            </Button>
-          </div>
+
+        <div className="flex justify-between items-center pt-2">
+          <Button variant="ghost" onClick={() => setMode("kuesioner")} size="sm" className="rounded-xl text-slate-600">
+            <ArrowLeft className="mr-1 h-4 w-4" /> Pertanyaan Karakter
+          </Button>
+          <Button
+            onClick={submit}
+            disabled={submitting || selectedValues.length === 0}
+            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white gap-2 rounded-xl shadow-sm px-4"
+            size="sm"
+          >
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            {submitting ? "Menyimpan..." : "Lihat Profil Karakter"}
+          </Button>
         </div>
       </div>
     )
@@ -480,60 +564,132 @@ export function KarakterForm() {
     return null
   }
 
+  const progressPercent = Math.round((answeredCount / totalSteps) * 100)
+  const encouragementText =
+    progressPercent === 0
+      ? "Santai saja, jawab sesuai dirimu yang sejati~"
+      : progressPercent < 40
+      ? "Semangat! Karaktermu unik dan hebat! ⭐"
+      : progressPercent < 80
+      ? "Keren! Menuju tahap nilai-nilai personal! 🦊"
+      : "Satu langkah lagi menuju nilai personal! ✨"
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100">
-          <UserCircle className="h-5 w-5 text-indigo-600" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <h1 className="text-lg font-bold text-gray-900 truncate">Karakter Diri</h1>
-            <span className="shrink-0 text-sm font-medium text-gray-400 ml-2">{step + 1}/{totalSteps}</span>
+      {/* Top Header Card with Companion Bar */}
+      <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center gap-4">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <AssessmentMascot
+            character="sparky"
+            mood={progressPercent > 50 ? "excited" : "happy"}
+            size={58}
+            className="shrink-0"
+          />
+          <div className="flex-1 sm:hidden">
+            <p className="text-xs font-semibold text-amber-700">Sparky Sahabat Karakter</p>
+            <p className="text-[11px] text-slate-500 line-clamp-1">{encouragementText}</p>
           </div>
+        </div>
+
+        <div className="flex-1 w-full min-w-0">
+          <div className="flex items-center justify-between mb-1.5">
+            <div>
+              <h1 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5">
+                <Star className="h-4 w-4 text-amber-500" />
+                Asesmen Karakter Diri
+              </h1>
+              <p className="text-xs text-slate-500 hidden sm:block">{encouragementText}</p>
+            </div>
+            <div className="text-right">
+              <span className="text-sm font-extrabold text-amber-600">{progressPercent}%</span>
+              <span className="text-xs font-medium text-slate-400 ml-1.5">({step + 1}/{totalSteps})</span>
+            </div>
+          </div>
+
           <ProgressDots states={dotStates} onJump={jumpTo} />
-          <div className="flex items-center justify-center gap-3 text-xs">
-            <span className="flex items-center gap-1 text-indigo-600">
+
+          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+            <span className="flex items-center gap-1 text-amber-600 font-medium">
               <CheckCircle2 className="h-3 w-3" /> {answeredCount} terjawab
             </span>
-            <span className="flex items-center gap-1 text-gray-400">
+            <span className="flex items-center gap-1 text-slate-400">
               <Circle className="h-3 w-3" /> {totalSteps - answeredCount} tersisa
             </span>
           </div>
         </div>
       </div>
 
-      <motion.div key={step} initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }}>
-        <Card className="border-0 shadow-sm overflow-hidden">
-          <div className="h-1.5 bg-gradient-to-r from-indigo-400 to-purple-500" />
-          <CardContent className="p-6 text-center">
-            <h2 className="mb-6 text-lg font-semibold text-gray-900">{q.text}</h2>
-            <div className="grid grid-cols-5 gap-2">
-              {[1, 2, 3, 4, 5].map((val) => (
-                <Button key={val} variant={jawaban[q.id] === val ? "default" : "outline"}
-                  className={`flex flex-col items-center h-20 ${jawaban[q.id] === val ? "bg-indigo-600" : ""}`}
-                  onClick={() => answer(val)}>
-                  {(() => {
-                    const ScaleIcon = skalaIcons[val - 1]
-                    return <ScaleIcon className="h-5 w-5" />
-                  })()}
-                  <span className="text-[10px] mt-1 leading-tight">{skalaLabel[val - 1]}</span>
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, x: 25 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -25 }}
+          transition={{ duration: 0.18 }}
+        >
+          <Card className="border-0 shadow-sm overflow-hidden bg-white rounded-2xl">
+            <div className="h-1.5 bg-gradient-to-r from-amber-400 via-orange-500 to-amber-500" />
+            <CardContent className="p-5 sm:p-7">
+              <div className="mb-4">
+                <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  Pernyataan Karakter
+                </span>
+              </div>
 
-      <div className="flex justify-between items-center">
-        <Button variant="ghost" onClick={goBack} disabled={step === 0} size="sm">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-relaxed mb-6">
+                {q.text}
+              </h2>
+
+              <div className="grid grid-cols-5 gap-2 sm:gap-3">
+                {[1, 2, 3, 4, 5].map((val) => {
+                  const isSelected = jawaban[q.id] === val
+                  const ScaleIcon = skalaIcons[val - 1]
+                  return (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => answer(val)}
+                      className={`group relative flex flex-col items-center justify-center rounded-2xl border-2 p-2.5 sm:p-3.5 transition-all duration-200 cursor-pointer ${
+                        isSelected
+                          ? "border-amber-500 bg-amber-50/80 text-amber-900 shadow-md scale-[1.03]"
+                          : "border-slate-100 bg-slate-50/70 hover:border-amber-200 hover:bg-amber-50/30 hover:scale-[1.02] text-slate-500"
+                      }`}
+                    >
+                      <ScaleIcon
+                        className={`h-5 w-5 sm:h-6 sm:w-6 transition-transform group-hover:scale-110 ${
+                          isSelected ? "text-amber-600" : "text-slate-400 group-hover:text-amber-500"
+                        }`}
+                      />
+                      <span
+                        className={`mt-1.5 text-center text-[10px] sm:text-xs leading-tight font-medium ${
+                          isSelected ? "text-amber-800 font-bold" : "text-slate-500 group-hover:text-slate-800"
+                        }`}
+                      >
+                        {skalaLabel[val - 1]}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </AnimatePresence>
+
+      <div className="flex justify-between items-center pt-2">
+        <Button variant="ghost" onClick={goBack} disabled={step === 0} size="sm" className="rounded-xl text-slate-600">
           <ArrowLeft className="mr-1 h-4 w-4" /> Sebelumnya
         </Button>
-        <Button variant="outline" size="sm" onClick={() => {
-          if (step < totalSteps - 1) setStep((s) => s + 1)
-          else setMode("nilai")
-        }}>
-          Lewati <ArrowDown className="ml-1 h-3 w-3" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            if (step < totalSteps - 1) setStep((s) => s + 1)
+            else setMode("nilai")
+          }}
+          className="rounded-xl text-amber-700 border-amber-200 hover:bg-amber-50"
+        >
+          {step === totalSteps - 1 ? "Ke Tahap Nilai" : "Lewati"} <ArrowDown className="ml-1 h-3.5 w-3.5" />
         </Button>
       </div>
     </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, type ComponentType } from "react"
-import { LayoutDashboard, MessageCircleHeart, FileText, Users, Settings, LogOut, GraduationCap, ClipboardList, BookOpen, Brain, Sparkles, UserCircle, Home, HelpCircle, RotateCcw, BarChart3, MoreHorizontal } from "lucide-react"
+import { LayoutDashboard, MessageCircleHeart, FileText, Users, Settings, LogOut, GraduationCap, ClipboardList, BookOpen, Brain, Sparkles, UserCircle, Home, HelpCircle, RotateCcw, BarChart3, MoreHorizontal, Compass } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -15,12 +15,13 @@ interface NavItem {
 }
 
 const studentItems: NavItem[] = [
+  { href: "/asesmen", icon: Compass, label: "Asesmen" },
   { href: "/curhat", icon: MessageCircleHeart, label: "Curhat" },
   { href: "/asesmen/minat-bakat", icon: Brain, label: "Minat" },
   { href: "/asesmen/psikologi", icon: Sparkles, label: "Psikologi" },
   { href: "/karakter", icon: UserCircle, label: "Karakter" },
   { href: "/asesmen/gaya-belajar", icon: Home, label: "Belajar" },
-  { href: "/asesmen/mbti", icon: Brain, label: "MBTI*" },
+  { href: "/asesmen/mbti", icon: Brain, label: "MBTI" },
 ]
 
 const adminItems: NavItem[] = [

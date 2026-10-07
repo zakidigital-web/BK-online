@@ -10,7 +10,8 @@ import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
 import { questions, hitungSkor, getGayaDominan, labelGaya } from "@/lib/asesmen/gaya-belajar"
 import { motion, AnimatePresence } from "framer-motion"
-import { BookOpen, ArrowLeft, Check, Eye, Headphones, FileText, Hand, SkipForward, Compass, Star, CheckCircle2, Circle, Clock, UserCircle, Loader2, Send, Clock3, ClipboardList } from "lucide-react"
+import { AssessmentMascot } from "@/components/asesmen/assessment-mascot"
+import { BookOpen, ArrowLeft, Check, Eye, Headphones, FileText, Hand, SkipForward, Compass, Star, CheckCircle2, Circle, Clock, UserCircle, Loader2, Send, Clock3, ClipboardList, Sparkles } from "lucide-react"
 
 
 const dimensiIcons = {
@@ -210,44 +211,76 @@ export function GayaBelajarForm() {
     const sorted = Object.entries(hasil).sort(([, a], [, b]) => b - a)
     return (
       <div className="space-y-6">
-        <Card className="border-0 bg-gradient-to-br from-blue-50 to-cyan-50 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
-              <BookOpen className="h-8 w-8 text-blue-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Gaya Belajarmu</h2>
+        <Card className="border-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-white shadow-md overflow-hidden relative">
+          <CardContent className="p-6 text-center flex flex-col items-center">
+            <AssessmentMascot
+              character="piko"
+              mood="cheering"
+              size={110}
+              showSpeechBubble
+              message={`Hebat, ${nama || "kamu"}! Gaya belajarmu ${getGayaDominan(hasil)}! 📚✨`}
+              className="mb-2"
+            />
+            <h2 className="text-2xl font-bold text-gray-900 mt-2">Gaya Belajar Dominan</h2>
             <p className="mt-1 text-blue-600 font-medium">{nama} · {kelas}</p>
-            <Badge className="mt-3 bg-blue-500 text-white text-sm">{getGayaDominan(hasil)}</Badge>
+            <Badge className="mt-3 bg-blue-600 text-white text-sm px-3.5 py-1 shadow-sm font-semibold">
+              {getGayaDominan(hasil)}
+            </Badge>
           </CardContent>
         </Card>
 
-        {sorted.map(([k, v]) => (
-          <Card key={k} className="border-0 shadow-sm">
-            <CardContent className="p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="font-semibold text-gray-900">{labelGaya[k]}</span>
-                <span className="text-lg font-bold text-blue-600">{v}/10</span>
-              </div>
-              <div className="h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
-                <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${(v / 10) * 100}%` }} />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {sorted.map(([k, v]) => {
+            const Icon = dimensiIcons[k as keyof typeof dimensiIcons]
+            return (
+              <Card key={k} className="border-0 shadow-sm bg-white rounded-2xl">
+                <CardContent className="p-4 sm:p-5">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="font-bold text-gray-900 flex items-center gap-2 text-sm">
+                      {Icon && <Icon className="h-4 w-4 text-blue-600" />}
+                      {labelGaya[k]}
+                    </span>
+                    <span className="text-base font-extrabold text-blue-600">{v}/10</span>
+                  </div>
+                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500"
+                      style={{ width: `${(v / 10) * 100}%` }}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
 
-        <Card className="border-0 bg-gradient-to-br from-blue-500 to-cyan-600 p-6 text-white">
-          <h3 className="font-bold">Tips Belajar untukmu</h3>
-          {sorted[0][0] === "V" && <p className="mt-2 text-sm text-blue-100">Gunakan mind map, video, diagram warna-warni. Catat dengan highlighter!</p>}
-          {sorted[0][0] === "A" && <p className="mt-2 text-sm text-blue-100">Rekam penjelasan guru, diskusi sama temen, belajar sambil musik.</p>}
-          {sorted[0][0] === "R" && <p className="mt-2 text-sm text-blue-100">Baca buku, bikin rangkuman, tulis ulang catatan dengan rapi.</p>}
-          {sorted[0][0] === "K" && <p className="mt-2 text-sm text-blue-100">Praktek langsung, eksperimen, belajar sambil jalan/gerak.</p>}
-          {["V", "A", "R", "K"].filter((k) => hasil[k] >= 7).length >= 2 && (
-            <p className="mt-2 text-sm text-blue-100">Kamu multimodal! Kombinasikan beberapa gaya belajar untuk hasil maksimal.</p>
-          )}
+        <Card className="border-0 bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 p-6 text-white rounded-2xl shadow-md">
+          <h3 className="font-bold text-lg flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-yellow-300" /> Tips Belajar Terbaik dari Piko
+          </h3>
+          <div className="mt-3 text-sm text-blue-50 leading-relaxed space-y-2">
+            {sorted[0][0] === "V" && (
+              <p>🎨 <strong>Tipe Visual:</strong> Gunakan mind map, diagram berwarna, video animasi, dan stabilo untuk menandai poin-poin penting.</p>
+            )}
+            {sorted[0][0] === "A" && (
+              <p>🎧 <strong>Tipe Auditori:</strong> Dengarkan penjelasan guru dengan saksama, ajak teman diskusi, rekam materi suara, atau belajar diiringi musik instrumental lembut.</p>
+            )}
+            {sorted[0][0] === "R" && (
+              <p>📖 <strong>Tipe Reading/Writing:</strong> Buat ringkasan tangan, baca buku referensi secara mandiri, tulis ulang rumus dan poin kunci ke catatan rapi.</p>
+            )}
+            {sorted[0][0] === "K" && (
+              <p>⚡ <strong>Tipe Kinestetik:</strong> Belajar sambil praktik langsung, gunakan role-play atau eksperimen nyata, dan jalan-jalan santai saat menghafal konsep.</p>
+            )}
+            {["V", "A", "R", "K"].filter((k) => hasil[k] >= 7).length >= 2 && (
+              <div className="p-3 bg-white/10 rounded-xl mt-3 text-xs border border-white/20">
+                🌟 <strong>Tipe Multimodal:</strong> Kamu memiliki fleksibilitas tinggi! Padukan beberapa media belajar agar pemahamanmu semakin maksimal.
+              </div>
+            )}
+          </div>
         </Card>
 
-        <Button variant="outline" className="w-full" onClick={reset}>
-          Ambil Lagi
+        <Button variant="outline" className="w-full h-11 rounded-xl gap-2 font-medium" onClick={reset}>
+          Ulangi Asesmen
         </Button>
       </div>
     )
@@ -265,14 +298,22 @@ export function GayaBelajarForm() {
     if (existingStatus.retakeStatus === "pending") {
       return (
         <div className="max-w-lg mx-auto space-y-4">
-          <Card className="border-0 bg-gradient-to-br from-amber-50 to-yellow-50 shadow-sm">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
-                <Clock3 className="h-7 w-7 text-amber-600" />
+          <Card className="border-0 bg-gradient-to-br from-amber-50 to-yellow-50 shadow-sm overflow-hidden">
+            <CardContent className="p-6 text-center flex flex-col items-center">
+              <AssessmentMascot
+                character="piko"
+                mood="thinking"
+                size={100}
+                showSpeechBubble
+                message="Piko setia menunggumu di sini ya!"
+                className="mb-2"
+              />
+              <div className="mx-auto my-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                <Clock3 className="h-6 w-6 text-amber-600" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Menunggu Persetujuan</h2>
-              <p className="mt-2 text-sm text-gray-500">
-                Permintaan retake asesmen sedang diproses. Silakan tunggu persetujuan dari guru BK atau Admin.
+              <h2 className="text-xl font-bold text-gray-900">Menunggu Persetujuan Retake</h2>
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed max-w-sm">
+                Permintaan retake gaya belajar sedang ditinjau oleh guru BK. Silakan periksa kembali nanti.
               </p>
             </CardContent>
           </Card>
@@ -283,17 +324,25 @@ export function GayaBelajarForm() {
     if (existingStatus.retakeStatus !== "approved") {
       return (
         <div className="max-w-lg mx-auto space-y-4">
-          <Card className="border-0 bg-gradient-to-br from-blue-50 to-cyan-50 shadow-sm">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
-                <ClipboardList className="h-7 w-7 text-blue-600" />
+          <Card className="border-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-white shadow-sm overflow-hidden">
+            <CardContent className="p-6 text-center flex flex-col items-center">
+              <AssessmentMascot
+                character="piko"
+                mood="happy"
+                size={100}
+                showSpeechBubble
+                message="Asesmen gaya belajarmu sudah tuntas!"
+                className="mb-2"
+              />
+              <div className="mx-auto my-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+                <ClipboardList className="h-6 w-6 text-blue-600" />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">Asesmen Sudah Selesai</h2>
-              <p className="mt-2 text-sm text-gray-500">
-                Kamu sudah mengerjakan asesmen ini. Untuk mengulang, hubungi guru BK atau Admin.
+              <h2 className="text-xl font-bold text-gray-900">Asesmen Sudah Dikerjakan</h2>
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed max-w-sm">
+                Kamu sudah mengetahui gaya belajarmu. Jika ingin menguji ulang pemahaman gaya belajarmu, ajukan retake di bawah ini.
               </p>
               <div className="mt-6 flex gap-3 justify-center">
-                <Button onClick={requestRetake} disabled={sendingRetake} className="bg-blue-600 hover:bg-blue-700 gap-2">
+                <Button onClick={requestRetake} disabled={sendingRetake} className="bg-blue-600 hover:bg-blue-700 gap-2 shadow-sm rounded-xl">
                   {sendingRetake ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   {sendingRetake ? "Mengirim..." : "Minta Retake"}
                 </Button>
@@ -309,45 +358,68 @@ export function GayaBelajarForm() {
     return (
       <div className="space-y-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-          <Card className="border-0 bg-gradient-to-br from-blue-500 to-cyan-600 overflow-hidden shadow-md">
-            <CardContent className="p-6 text-center text-white">
-              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur">
-                <BookOpen className="h-10 w-10" />
-              </div>
-              <h2 className="text-2xl font-bold mb-2">Temukan Caramu</h2>
-              <p className="text-blue-100 leading-relaxed">
-                Setiap orang punya cara belajar yang beda. Ada yang suka baca, dengerin,
-                atau praktek langsung. Yuk cari tahu gaya belajarmu!
+          <Card className="border-0 bg-gradient-to-br from-blue-500 via-indigo-600 to-violet-700 overflow-hidden shadow-lg text-white relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+            <CardContent className="p-6 sm:p-8 text-center flex flex-col items-center relative z-10">
+              <AssessmentMascot
+                character="piko"
+                mood="excited"
+                size={130}
+                showSpeechBubble
+                message="Halo! Aku Piko, yuk cari caramu belajar paling seru! 🐰🎧"
+                className="mb-3"
+              />
+              <Badge className="bg-white/20 text-white border-white/30 text-xs px-3 py-1 font-semibold mb-2">
+                Asesmen Gaya Belajar VARK
+              </Badge>
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Temukan Gaya Belajar Terbaikmu</h2>
+              <p className="text-blue-100 leading-relaxed max-w-md text-sm sm:text-base">
+                Setiap anak punya keunikan cara menyerap materi. Ada yang lewat gambar, suara, tulisan, atau gerak praktik langsung!
               </p>
-              <div className="mt-6 flex items-center justify-center gap-6 text-xs text-blue-200">
-                <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5" /> {totalSteps} pertanyaan</span>
-                <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> ~3 menit</span>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-blue-100 bg-black/10 px-4 py-2 rounded-full backdrop-blur-sm">
+                <span className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-amber-300" /> {totalSteps} Pertanyaan</span>
+                <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-cyan-300" /> ~3 Menit Cepat</span>
+                <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-blue-300" /> Tips Khusus untukmu</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+          <Card className="border-0 shadow-sm bg-white/90 backdrop-blur-sm rounded-2xl">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base sm:text-lg flex items-center gap-2 text-slate-800">
                 <UserCircle className="h-5 w-5 text-blue-600" />
-                Identitas Diri
+                Identitas Peserta
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Nama Lengkap</Label>
-                <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-700">
-                  {nama || "Mengambil data..."}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-slate-500 font-medium">Nama Lengkap</Label>
+                  <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 text-sm font-semibold text-slate-800">
+                    {nama || "Mengambil data..."}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-slate-500 font-medium">Kelas</Label>
+                  <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 text-sm font-semibold text-slate-800">
+                    {kelas || (loadingSiswa ? "Memuat..." : "Kelas belum diatur, hubungi Guru BK")}
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Kelas</Label>
-                <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-700">
-                  {kelas || (loadingSiswa ? "Memuat..." : "Kelas belum diatur, hubungi Guru BK")}
-                </div>
+
+              <div className="rounded-xl bg-blue-50/70 p-3.5 text-xs text-blue-800 border border-blue-100 flex items-start gap-2.5">
+                <Sparkles className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Tips dari Piko:</strong> Pilih jawaban yang paling spontan menggambarkan kebiasaan belajarmu sehari-hari!
+                </span>
               </div>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 gap-2" onClick={() => setShowIntro(false)} disabled={!nama || !kelas || loadingSiswa}>
-                {loadingSiswa ? "Memuat..." : "Mulai"} <BookOpen className="h-4 w-4" />
+
+              <Button
+                className="w-full h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl shadow-md gap-2 transition-all hover:scale-[1.01]"
+                onClick={() => setShowIntro(false)}
+                disabled={!nama || !kelas || loadingSiswa}
+              >
+                {loadingSiswa ? "Memuat..." : "Mulai Bersama Piko"} <BookOpen className="h-4 w-4" />
               </Button>
             </CardContent>
           </Card>
@@ -362,28 +434,60 @@ export function GayaBelajarForm() {
     return null
   }
 
+  const progressPercent = Math.round((answeredCount / totalSteps) * 100)
+  const encouragementText =
+    progressPercent === 0
+      ? "Pilih opsi yang paling nyaman bagimu~"
+      : progressPercent < 40
+      ? "Keren! Piko siap mencatat caramu belajar! 🎧"
+      : progressPercent < 80
+      ? "Wah hebat! Sebentar lagi kita tahu gaya belajarmu! 📚"
+      : "Langkah terakhir! Ayo selesaikan bersama Piko! ✨"
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100">
-          <BookOpen className="h-5 w-5 text-blue-600" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <h1 className="text-lg font-bold text-gray-900 truncate">Gaya Belajar</h1>
-            <span className="shrink-0 text-sm font-medium text-gray-400 ml-2">{step + 1}/{totalSteps}</span>
+      {/* Top Header Card with Companion Bar */}
+      <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center gap-4">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <AssessmentMascot
+            character="piko"
+            mood={isDone ? "cheering" : progressPercent > 50 ? "excited" : "happy"}
+            size={58}
+            className="shrink-0"
+          />
+          <div className="flex-1 sm:hidden">
+            <p className="text-xs font-semibold text-blue-700">Piko Sahabat Belajar</p>
+            <p className="text-[11px] text-slate-500 line-clamp-1">{encouragementText}</p>
           </div>
+        </div>
+
+        <div className="flex-1 w-full min-w-0">
+          <div className="flex items-center justify-between mb-1.5">
+            <div>
+              <h1 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5">
+                <BookOpen className="h-4 w-4 text-blue-600" />
+                Gaya Belajar (VARK)
+              </h1>
+              <p className="text-xs text-slate-500 hidden sm:block">{encouragementText}</p>
+            </div>
+            <div className="text-right">
+              <span className="text-sm font-extrabold text-blue-600">{progressPercent}%</span>
+              <span className="text-xs font-medium text-slate-400 ml-1.5">({step + 1}/{totalSteps})</span>
+            </div>
+          </div>
+
           <ProgressDots states={dotStates} onJump={jumpTo} />
-          <div className="flex items-center justify-center gap-3 text-xs">
-            <span className="flex items-center gap-1 text-blue-600">
+
+          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+            <span className="flex items-center gap-1 text-blue-600 font-medium">
               <CheckCircle2 className="h-3 w-3" /> {answeredCount} terjawab
             </span>
             {skippedCount > 0 && (
-              <span className="flex items-center gap-1 text-amber-600">
+              <span className="flex items-center gap-1 text-amber-600 font-medium">
                 <SkipForward className="h-3 w-3" /> {skippedCount} dilewati
               </span>
             )}
-            <span className="flex items-center gap-1 text-gray-400">
+            <span className="flex items-center gap-1 text-slate-400">
               <Circle className="h-3 w-3" /> {remainingCount} tersisa
             </span>
           </div>
@@ -393,21 +497,30 @@ export function GayaBelajarForm() {
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
-          initial={{ opacity: 0, x: 40 }}
+          initial={{ opacity: 0, x: 25 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -40 }}
-          transition={{ duration: 0.2 }}
+          exit={{ opacity: 0, x: -25 }}
+          transition={{ duration: 0.18 }}
         >
-          <Card className="border-0 shadow-sm overflow-hidden">
-            <div className="h-1.5 bg-gradient-to-r from-blue-400 to-cyan-500" />
-            <CardContent className="p-6">
-              <div className="mb-3 flex items-center gap-2">
-                <h2 className="text-base font-semibold text-gray-900 leading-relaxed flex-1">{q.text}</h2>
+          <Card className="border-0 shadow-sm overflow-hidden bg-white rounded-2xl">
+            <div className="h-1.5 bg-gradient-to-r from-blue-400 via-indigo-500 to-violet-500" />
+            <CardContent className="p-5 sm:p-7">
+              <div className="mb-4 flex items-center justify-between">
+                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  Situasi Pembelajaran
+                </span>
                 {skipped.has(q.id) && (
-                  <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50 text-[10px] shrink-0">Dilewati</Badge>
+                  <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50 text-[10px]">
+                    Dilewati
+                  </Badge>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-3">
+
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-relaxed mb-6">
+                {q.text}
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {q.pilihan.map((p) => {
                   const OptionIcon = dimensiIcons[p.dimensi]
                   const isSelected = jawaban[q.id] === p.dimensi
@@ -416,22 +529,31 @@ export function GayaBelajarForm() {
                       key={p.dimensi}
                       type="button"
                       onClick={() => answer(p.dimensi)}
-                      className={`group flex flex-col items-center justify-center rounded-xl border-2 p-5 transition-all duration-200 ${
+                      className={`group flex items-start text-left gap-3.5 rounded-2xl border-2 p-4 transition-all duration-200 cursor-pointer ${
                         isSelected
-                          ? "border-blue-500 bg-blue-50 shadow-md scale-[1.02]"
-                          : "border-gray-100 bg-gray-50 hover:border-blue-200 hover:bg-blue-50/50 hover:scale-[1.02]"
+                          ? "border-blue-500 bg-blue-50/80 text-blue-900 shadow-md scale-[1.01]"
+                          : "border-slate-100 bg-slate-50/60 hover:border-blue-200 hover:bg-blue-50/30 text-slate-700 hover:scale-[1.01]"
                       }`}
                     >
-                      <div className={`mb-2 flex h-12 w-12 items-center justify-center rounded-xl transition-colors ${
-                        isSelected ? "bg-blue-100 text-blue-600" : "bg-gray-100 text-gray-400 group-hover:bg-blue-100 group-hover:text-blue-500"
-                      }`}>
-                        <OptionIcon className="h-6 w-6" />
+                      <div
+                        className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all ${
+                          isSelected
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "bg-white text-slate-400 border border-slate-200 group-hover:border-blue-300 group-hover:text-blue-600"
+                        }`}
+                      >
+                        <OptionIcon className="h-5 w-5" />
                       </div>
-                      <span className={`text-sm font-semibold transition-colors ${
-                        isSelected ? "text-blue-700" : "text-gray-600 group-hover:text-blue-600"
-                      }`}>
-                        {p.label}
-                      </span>
+                      <div className="flex-1 min-w-0">
+                        <span className={`text-sm font-semibold leading-snug block transition-colors ${
+                          isSelected ? "text-blue-900" : "text-slate-800 group-hover:text-blue-900"
+                        }`}>
+                          {p.label}
+                        </span>
+                        <span className="text-[11px] text-slate-400 mt-1 block">
+                          Tipe {labelGaya[p.dimensi]}
+                        </span>
+                      </div>
                     </button>
                   )
                 })}
@@ -441,18 +563,29 @@ export function GayaBelajarForm() {
         </motion.div>
       </AnimatePresence>
 
-      <div className="flex justify-between items-center">
-        <Button variant="ghost" onClick={goBack} disabled={step === 0} size="sm">
+      <div className="flex justify-between items-center pt-2">
+        <Button variant="ghost" onClick={goBack} disabled={step === 0} size="sm" className="rounded-xl text-slate-600">
           <ArrowLeft className="mr-1 h-4 w-4" /> Sebelumnya
         </Button>
         <div className="flex gap-2">
           {!isDone && (
-            <Button variant="outline" size="sm" onClick={skipQuestion} className="text-amber-600 border-amber-200 hover:bg-amber-50 gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={skipQuestion}
+              className="text-amber-600 border-amber-200 hover:bg-amber-50 gap-1 rounded-xl"
+            >
               <SkipForward className="h-3.5 w-3.5" /> Lewati
             </Button>
           )}
-          <Button onClick={submit} disabled={submitting || !isDone} className="bg-blue-600 hover:bg-blue-700 gap-2" size="sm">
-            {submitting ? "Menyimpan..." : "Lihat Hasil"} <Check className="h-4 w-4" />
+          <Button
+            onClick={submit}
+            disabled={submitting || !isDone}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white gap-2 rounded-xl shadow-sm px-4"
+            size="sm"
+          >
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            {submitting ? "Menyimpan..." : isDone ? "Lihat Hasil Belajar" : `${answeredCount}/${totalSteps} Selesai`}
           </Button>
         </div>
       </div>

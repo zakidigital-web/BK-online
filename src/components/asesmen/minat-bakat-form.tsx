@@ -11,6 +11,7 @@ import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
 import { questions, hitungSkor, getTipeTeratas, labelDimensi, rekomendasiKarier } from "@/lib/asesmen/minat-bakat"
 import { motion, AnimatePresence } from "framer-motion"
+import { AssessmentMascot } from "@/components/asesmen/assessment-mascot"
 import {
   ArrowLeft,
   ArrowRight,
@@ -260,14 +261,12 @@ export function MinatBakatForm() {
     const sorted = Object.entries(hasil).sort(([, a], [, b]) => b - a)
     return (
       <div className="space-y-6">
-        <Card className="border-0 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-sm">
-          <CardContent className="p-6 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100">
-              <Sparkles className="h-8 w-8 text-emerald-600" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">Hasil Asesmen Minat Bakat</h2>
+        <Card className="border-0 bg-gradient-to-br from-emerald-50 via-teal-50 to-white shadow-md overflow-hidden relative">
+          <CardContent className="p-6 text-center flex flex-col items-center">
+            <AssessmentMascot mood="cheering" size={110} showSpeechBubble message={`Luar biasa, ${nama || "kamu"}! 🎉`} className="mb-2" />
+            <h2 className="text-2xl font-bold text-gray-900 mt-2">Hasil Asesmen Minat Bakat</h2>
             <p className="mt-1 text-emerald-600 font-medium">{nama} · {kelas}</p>
-            <Badge className="mt-3 bg-emerald-500 text-white">{getTipeTeratas(hasil)}</Badge>
+            <Badge className="mt-3 bg-emerald-500 text-white text-sm px-3 py-1 shadow-sm">{getTipeTeratas(hasil)}</Badge>
           </CardContent>
         </Card>
 
@@ -321,14 +320,22 @@ export function MinatBakatForm() {
     if (existingStatus.retakeStatus === "pending") {
       return (
         <div className="max-w-lg mx-auto space-y-4">
-          <Card className="border-0 bg-gradient-to-br from-amber-50 to-yellow-50 shadow-sm">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100">
-                <Clock3 className="h-7 w-7 text-amber-600" />
+          <Card className="border-0 bg-gradient-to-br from-amber-50 to-yellow-50 shadow-sm overflow-hidden">
+            <CardContent className="p-6 text-center flex flex-col items-center">
+              <AssessmentMascot
+                character="kimi"
+                mood="thinking"
+                size={100}
+                showSpeechBubble
+                message="Kimi bantu pantau persetujuan retake ya!"
+                className="mb-2"
+              />
+              <div className="mx-auto my-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                <Clock3 className="h-6 w-6 text-amber-600" />
               </div>
               <h2 className="text-xl font-bold text-gray-900">Menunggu Persetujuan</h2>
-              <p className="mt-2 text-sm text-gray-500">
-                Permintaan retake asesmen sedang diproses. Silakan tunggu persetujuan dari guru BK atau Admin.
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed max-w-sm">
+                Permintaan retake asesmen sedang diproses. Silakan tunggu konfirmasi dari guru BK atau Admin.
               </p>
             </CardContent>
           </Card>
@@ -339,19 +346,27 @@ export function MinatBakatForm() {
     if (existingStatus.retakeStatus !== "approved") {
       return (
         <div className="max-w-lg mx-auto space-y-4">
-          <Card className="border-0 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-sm">
-            <CardContent className="p-6 text-center">
-              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
-                <ClipboardList className="h-7 w-7 text-emerald-600" />
+          <Card className="border-0 bg-gradient-to-br from-emerald-50 via-teal-50 to-white shadow-sm overflow-hidden">
+            <CardContent className="p-6 text-center flex flex-col items-center">
+              <AssessmentMascot
+                character="kimi"
+                mood="happy"
+                size={100}
+                showSpeechBubble
+                message="Kamu sudah menyelesaikan asesmen ini!"
+                className="mb-2"
+              />
+              <div className="mx-auto my-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
+                <ClipboardList className="h-6 w-6 text-emerald-600" />
               </div>
               <h2 className="text-xl font-bold text-gray-900">Asesmen Sudah Selesai</h2>
-              <p className="mt-2 text-sm text-gray-500">
-                Kamu sudah mengerjakan asesmen ini. Untuk mengulang, hubungi guru BK atau Admin.
+              <p className="mt-2 text-sm text-gray-600 leading-relaxed max-w-sm">
+                Hasilmu sudah tersimpan rapi di sistem BK. Ingin mengerjakan ulang? Ajukan permintaan retake di bawah ini.
               </p>
               <div className="mt-6 flex gap-3 justify-center">
-                <Button onClick={requestRetake} disabled={sendingRetake} className="bg-emerald-600 hover:bg-emerald-700 gap-2">
+                <Button onClick={requestRetake} disabled={sendingRetake} className="bg-emerald-600 hover:bg-emerald-700 gap-2 shadow-sm">
                   {sendingRetake ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  {sendingRetake ? "Mengirim..." : "Minta Retake"}
+                  {sendingRetake ? "Mengirim Permintaan..." : "Minta Retake"}
                 </Button>
               </div>
             </CardContent>
@@ -365,45 +380,68 @@ export function MinatBakatForm() {
     return (
       <div className="space-y-4">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-          <Card className="border-0 bg-gradient-to-br from-emerald-500 to-teal-600 overflow-hidden shadow-md">
-            <CardContent className="p-6 text-center text-white">
-              <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur">
-                <Compass className="h-10 w-10" />
-              </div>
-              <h2 className="text-2xl font-bold mb-2">Petualangan Potensi</h2>
-              <p className="text-emerald-100 leading-relaxed">
-                Setiap orang punya bakat unik. Ikuti petualangan ini untuk menemukan
-                potensi terpendam dan arah karier yang paling cocok untukmu!
+          <Card className="border-0 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 overflow-hidden shadow-lg text-white relative">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+            <CardContent className="p-6 sm:p-8 text-center flex flex-col items-center relative z-10">
+              <AssessmentMascot
+                character="kimi"
+                mood="excited"
+                size={130}
+                showSpeechBubble
+                message="Halo! Aku Kimi, yuk cari tahu potensimu! ✨"
+                className="mb-3"
+              />
+              <Badge className="bg-white/20 text-white border-white/30 text-xs px-3 py-1 font-semibold mb-2">
+                Asesmen Minat & Bakat Holland (RIASEC)
+              </Badge>
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">Petualangan Potensi Karier</h2>
+              <p className="text-emerald-100 leading-relaxed max-w-md text-sm sm:text-base">
+                Setiap orang punya keunikan dan bakat terpendam. Ikuti tes ini untuk menemukan tipe kepribadian kerja dan inspirasi karier impianmu!
               </p>
-              <div className="mt-6 flex items-center justify-center gap-6 text-xs text-emerald-200">
-                <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5" /> {totalSteps} pertanyaan</span>
-                <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> ~5 menit</span>
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-emerald-100 bg-black/10 px-4 py-2 rounded-full backdrop-blur-sm">
+                <span className="flex items-center gap-1.5"><Star className="h-3.5 w-3.5 text-amber-300" /> {totalSteps} Pertanyaan</span>
+                <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-cyan-300" /> ~5 Menit Santai</span>
+                <span className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-emerald-300" /> Hasil Instan & Akurat</span>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+          <Card className="border-0 shadow-sm bg-white/90 backdrop-blur-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base sm:text-lg flex items-center gap-2 text-slate-800">
                 <UserCircle className="h-5 w-5 text-emerald-600" />
-                Identitas Diri
+                Data Peserta Asesmen
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label>Nama Lengkap</Label>
-                <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-700">
-                  {nama || "Mengambil data..."}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-slate-500 font-medium">Nama Lengkap</Label>
+                  <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 text-sm font-semibold text-slate-800">
+                    {nama || "Mengambil data..."}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-slate-500 font-medium">Kelas</Label>
+                  <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 text-sm font-semibold text-slate-800">
+                    {kelas || (loadingSiswa ? "Memuat data kelas..." : "Kelas belum diatur, hubungi Guru BK")}
+                  </div>
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label>Kelas</Label>
-                <div className="flex h-10 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 text-sm font-medium text-gray-700">
-                  {kelas || (loadingSiswa ? "Memuat..." : "Kelas belum diatur, hubungi Guru BK")}
-                </div>
+
+              <div className="rounded-xl bg-emerald-50/60 p-3.5 text-xs text-emerald-800 border border-emerald-100/80 flex items-start gap-2.5">
+                <Sparkles className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span>
+                  <strong>Tips dari Kimi:</strong> Tidak ada jawaban yang salah atau benar. Jawablah sesuai apa yang paling kamu sukai ya!
+                </span>
               </div>
-              <Button className="w-full bg-emerald-600 hover:bg-emerald-700 gap-2" onClick={() => setShowIntro(false)} disabled={!nama || !kelas || loadingSiswa}>
-                {loadingSiswa ? "Memuat..." : "Mulai Petualangan"} <Compass className="h-4 w-4" />
+
+              <Button
+                className="w-full h-11 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-xl shadow-md gap-2 transition-all hover:scale-[1.01]"
+                onClick={() => setShowIntro(false)}
+                disabled={!nama || !kelas || loadingSiswa}
+              >
+                {loadingSiswa ? "Memuat..." : "Mulai Bersama Kimi"} <Compass className="h-4 w-4" />
               </Button>
             </CardContent>
           </Card>
@@ -419,28 +457,65 @@ export function MinatBakatForm() {
   }
   const QuestionIcon = dimensiIcons[q.dimensi]
 
+  // Cheerful encouraging phrase based on progress
+  const progressPercent = Math.round((answeredCount / totalSteps) * 100)
+  const encouragementText =
+    progressPercent === 0
+      ? "Santai saja, pilih yang paling sesuai hatimu~"
+      : progressPercent < 35
+      ? "Langkah awal yang hebat! Lanjut terus ya! 🌿"
+      : progressPercent < 70
+      ? "Sudah separuh jalan! Kamu fokus banget! 🌟"
+      : progressPercent < 100
+      ? "Tinggal sedikit lagi! Kimi bangga padamu! ✨"
+      : "Luar biasa! Semua pertanyaan terjawab! 🎉"
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100">
-          <Brain className="h-5 w-5 text-emerald-600" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <h1 className="text-lg font-bold text-gray-900 truncate">Minat Bakat</h1>
-            <span className="shrink-0 text-sm font-medium text-gray-400 ml-2">{step + 1}/{totalSteps}</span>
+      {/* Top Header Card with Companion Bar */}
+      <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center gap-4">
+        {/* Compact Mascot Buddy */}
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <AssessmentMascot
+            character="kimi"
+            mood={isDone ? "cheering" : progressPercent > 50 ? "excited" : "happy"}
+            size={58}
+            className="shrink-0"
+          />
+          <div className="flex-1 sm:hidden">
+            <p className="text-xs font-semibold text-emerald-700">Kimi Sahabatmu</p>
+            <p className="text-[11px] text-slate-500 line-clamp-1">{encouragementText}</p>
           </div>
+        </div>
+
+        {/* Progress Center */}
+        <div className="flex-1 w-full min-w-0">
+          <div className="flex items-center justify-between mb-1.5">
+            <div>
+              <h1 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-1.5">
+                <Brain className="h-4 w-4 text-emerald-600" />
+                Asesmen Minat Bakat
+              </h1>
+              <p className="text-xs text-slate-500 hidden sm:block">{encouragementText}</p>
+            </div>
+            <div className="text-right">
+              <span className="text-sm font-extrabold text-emerald-600">{progressPercent}%</span>
+              <span className="text-xs font-medium text-slate-400 ml-1.5">({step + 1}/{totalSteps})</span>
+            </div>
+          </div>
+
           <ProgressDots states={dotStates} onJump={jumpTo} />
-          <div className="flex items-center justify-center gap-3 text-xs">
-            <span className="flex items-center gap-1 text-emerald-600">
+
+          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+            <span className="flex items-center gap-1 text-emerald-600 font-medium">
               <CheckCircle2 className="h-3 w-3" /> {answeredCount} terjawab
             </span>
             {skippedCount > 0 && (
-              <span className="flex items-center gap-1 text-amber-600">
+              <span className="flex items-center gap-1 text-amber-600 font-medium">
                 <SkipForward className="h-3 w-3" /> {skippedCount} dilewati
               </span>
             )}
-            <span className="flex items-center gap-1 text-gray-400">
+            <span className="flex items-center gap-1 text-slate-400">
               <Circle className="h-3 w-3" /> {remainingCount} tersisa
             </span>
           </div>
@@ -450,43 +525,53 @@ export function MinatBakatForm() {
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
-          initial={{ opacity: 0, x: 40 }}
+          initial={{ opacity: 0, x: 25 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -40 }}
-          transition={{ duration: 0.2 }}
+          exit={{ opacity: 0, x: -25 }}
+          transition={{ duration: 0.18 }}
         >
-          <Card className="border-0 shadow-sm overflow-hidden">
-            <div className="h-1.5 bg-gradient-to-r from-emerald-400 to-teal-500" />
-            <CardContent className="p-6">
-              <div className="mb-3 flex items-center gap-2 text-xs font-semibold text-emerald-600 uppercase tracking-wider">
-                <QuestionIcon className="h-3.5 w-3.5" />
-                <span>Dimensi {q.dimensi}</span>
+          <Card className="border-0 shadow-sm overflow-hidden bg-white rounded-2xl">
+            <div className="h-1.5 bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500" />
+            <CardContent className="p-5 sm:p-7">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  <QuestionIcon className="h-3.5 w-3.5" />
+                  <span>Dimensi {q.dimensi} - {labelDimensi[q.dimensi] || ""}</span>
+                </div>
                 {skipped.has(q.id) && (
-                  <Badge variant="outline" className="ml-auto text-amber-600 border-amber-300 bg-amber-50 text-[10px]">Dilewati</Badge>
+                  <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50 text-[10px]">
+                    Dilewati
+                  </Badge>
                 )}
               </div>
-              <h2 className="mb-6 text-lg font-semibold text-gray-900 leading-relaxed">{q.text}</h2>
-              <div className="grid grid-cols-5 gap-2">
+
+              <h2 className="mb-6 text-base sm:text-lg font-bold text-slate-900 leading-relaxed">
+                {q.text}
+              </h2>
+
+              <div className="grid grid-cols-5 gap-2 sm:gap-3">
                 {[1, 2, 3, 4, 5].map((val) => {
                   const isSelected = jawaban[q.id] === val
+                  const ScaleIcon = skalaMinatIcons[val - 1]
                   return (
                     <button
                       key={val}
                       type="button"
                       onClick={() => answer(val)}
-                      className={`group relative flex flex-col items-center justify-center rounded-xl border-2 p-3 transition-all duration-200 ${
+                      className={`group relative flex flex-col items-center justify-center rounded-2xl border-2 p-2.5 sm:p-3.5 transition-all duration-200 cursor-pointer ${
                         isSelected
-                          ? "border-emerald-500 bg-emerald-50 shadow-md scale-105"
-                          : "border-gray-100 bg-gray-50 hover:border-emerald-200 hover:bg-emerald-50/50 hover:scale-[1.02]"
+                          ? "border-emerald-500 bg-emerald-50/90 text-emerald-900 shadow-md scale-[1.03]"
+                          : "border-slate-100 bg-slate-50/70 hover:border-emerald-200 hover:bg-emerald-50/40 hover:scale-[1.02] text-slate-500"
                       }`}
                     >
-                      {(() => {
-                        const ScaleIcon = skalaMinatIcons[val - 1]
-                        return <ScaleIcon className={`h-5 w-5 transition-colors ${isSelected ? "text-emerald-700" : "text-gray-400 group-hover:text-emerald-600"}`} />
-                      })()}
+                      <ScaleIcon
+                        className={`h-5 w-5 sm:h-6 sm:w-6 transition-transform group-hover:scale-110 ${
+                          isSelected ? "text-emerald-600" : "text-slate-400 group-hover:text-emerald-500"
+                        }`}
+                      />
                       <span
-                        className={`mt-1 text-center text-[10px] leading-tight transition-colors ${
-                          isSelected ? "text-emerald-700 font-medium" : "text-gray-400 group-hover:text-emerald-600"
+                        className={`mt-1.5 text-center text-[10px] sm:text-xs leading-tight font-medium ${
+                          isSelected ? "text-emerald-800 font-bold" : "text-slate-500 group-hover:text-slate-800"
                         }`}
                       >
                         {skalaMinatLabel[val - 1]}
@@ -500,18 +585,29 @@ export function MinatBakatForm() {
         </motion.div>
       </AnimatePresence>
 
-      <div className="flex justify-between items-center">
-        <Button variant="ghost" onClick={goBack} disabled={step === 0} size="sm">
+      <div className="flex justify-between items-center pt-2">
+        <Button variant="ghost" onClick={goBack} disabled={step === 0} size="sm" className="rounded-xl text-slate-600">
           <ArrowLeft className="mr-1 h-4 w-4" /> Sebelumnya
         </Button>
         <div className="flex gap-2">
           {!isDone && (
-            <Button variant="outline" size="sm" onClick={skipQuestion} className="text-amber-600 border-amber-200 hover:bg-amber-50 gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={skipQuestion}
+              className="text-amber-600 border-amber-200 hover:bg-amber-50 gap-1 rounded-xl"
+            >
               <SkipForward className="h-3.5 w-3.5" /> Lewati
             </Button>
           )}
-          <Button onClick={submit} disabled={submitting || !isDone} className="bg-emerald-600 hover:bg-emerald-700 gap-2" size="sm">
-            {submitting ? "Menyimpan..." : "Lihat Hasil"} <Check className="h-4 w-4" />
+          <Button
+            onClick={submit}
+            disabled={submitting || !isDone}
+            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white gap-2 rounded-xl shadow-sm px-4"
+            size="sm"
+          >
+            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+            {submitting ? "Menyimpan..." : isDone ? "Lihat Hasil Potensi" : `${answeredCount}/${totalSteps} Selesai`}
           </Button>
         </div>
       </div>
