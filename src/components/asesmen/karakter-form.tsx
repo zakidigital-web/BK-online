@@ -126,6 +126,16 @@ export function KarakterForm() {
   useEffect(() => {
     if (!user) return
     setNama(user.name)
+    if (user.role !== "siswa") {
+      const roleKelas =
+        user.role === "guru" ? "Guru BK" :
+        user.role === "walas" ? (user.kelas ? `Kelas ${user.kelas} (Walas)` : "Wali Kelas") :
+        user.role === "guru-mapel" ? (user.mapel ? `Guru ${user.mapel}` : "Guru Mapel") :
+        user.role === "admin" ? "Administrator" : "Guru / Staff"
+      setKelas(roleKelas)
+      setLoadingSiswa(false)
+      return
+    }
     setLoadingSiswa(true)
     fetch(`/api/siswa?nisn=${encodeURIComponent(user.username)}`)
       .then((r) => r.json())
@@ -174,13 +184,14 @@ export function KarakterForm() {
 
   useEffect(() => {
     if (!nama || !kelas || !user?.username) return
+    if (user.role !== "siswa") return
     setCheckingStatus(true)
     fetch(`/api/siswa/asesmen/status?nisn=${encodeURIComponent(user.username)}&jenis=karakter`)
       .then((r) => r.json())
       .then((data) => setExistingStatus(data))
       .catch(() => {})
       .finally(() => setCheckingStatus(false))
-  }, [nama, kelas, user?.username])
+  }, [nama, kelas, user?.username, user?.role])
 
   const checkStatus = useCallback(async () => {
     if (!nama || !kelas || !user?.username) return
@@ -458,9 +469,11 @@ export function KarakterForm() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-500 font-medium">Kelas</Label>
+                  <Label className="text-xs text-slate-500 font-medium">
+                    {user?.role !== "siswa" ? "Peran / Posisi" : "Kelas"}
+                  </Label>
                   <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 text-sm font-semibold text-slate-800">
-                    {kelas || (loadingSiswa ? "Memuat..." : "Kelas belum diatur, hubungi Guru BK")}
+                    {kelas || (loadingSiswa ? "Memuat..." : user?.role !== "siswa" ? "Guru / Staff" : "Kelas belum diatur, hubungi Guru BK")}
                   </div>
                 </div>
               </div>

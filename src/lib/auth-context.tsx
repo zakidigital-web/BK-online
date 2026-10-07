@@ -8,6 +8,8 @@ export interface User {
   username: string
   role: string
   anonymousId: string | null
+  kelas?: string | null
+  mapel?: string | null
 }
 
 interface AuthContextType {

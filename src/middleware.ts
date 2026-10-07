@@ -29,9 +29,24 @@ export async function middleware(request: NextRequest) {
   }
 
   // 4. Role-based authorization
-  if (isAdminRoute && session.role !== "admin") {
+  const isSuperAdminRoute =
+    pathname.startsWith("/admin/guru") ||
+    pathname.startsWith("/api/admin/guru") ||
+    pathname.startsWith("/admin/pengaturan") ||
+    pathname.startsWith("/api/admin/reset") ||
+    pathname.startsWith("/api/admin/backup") ||
+    pathname.startsWith("/api/admin/restore")
+
+  if (isSuperAdminRoute && session.role !== "admin") {
     if (isApi) {
-      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Administrator" }, { status: 403 })
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Super Administrator" }, { status: 403 })
+    }
+    return NextResponse.redirect(new URL("/admin/dashboard", request.url))
+  }
+
+  if (isAdminRoute && !["admin", "guru", "walas"].includes(session.role)) {
+    if (isApi) {
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Staf/Guru" }, { status: 403 })
     }
     return NextResponse.redirect(new URL("/login", request.url))
   }

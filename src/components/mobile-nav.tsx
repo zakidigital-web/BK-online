@@ -45,6 +45,7 @@ const studentItems: NavItem[] = [
 
 const adminItems: NavItem[] = [
   { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/asesmen", icon: Compass, label: "Asesmen" },
   { href: "/admin/curhat", icon: MessageCircleHeart, label: "Curhat" },
   { href: "/admin/laporan", icon: FileText, label: "Laporan" },
   { href: "/admin/siswa", icon: Users, label: "Siswa" },
@@ -59,6 +60,7 @@ const adminItems: NavItem[] = [
 
 const guruBKItems: NavItem[] = [
   { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/asesmen", icon: Compass, label: "Asesmen" },
   { href: "/admin/curhat", icon: MessageCircleHeart, label: "Curhat" },
   { href: "/admin/siswa", icon: Users, label: "Siswa" },
   { href: "/admin/laporan", icon: FileText, label: "Laporan" },
@@ -72,12 +74,14 @@ const guruBKItems: NavItem[] = [
 
 const walasItems: NavItem[] = [
   { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/asesmen", icon: Compass, label: "Asesmen" },
   { href: "/admin/laporan", icon: FileText, label: "Laporan" },
   { href: "/admin/siswa", icon: Users, label: "Siswa" },
   { href: "/admin/analisa", icon: BarChart3, label: "Analisa" },
 ]
 
 const guruMapelItems: NavItem[] = [
+  { href: "/asesmen", icon: Compass, label: "Asesmen" },
   { href: "/guru/asesmen", icon: ClipboardList, label: "Mengajar" },
   { href: "/guru/psikologi", icon: BookOpen, label: "Psikologi" },
   { href: "/guru/mbti", icon: Brain, label: "MBTI" },
@@ -219,7 +223,7 @@ export function MobileNav({
                   type="button"
                   onClick={() => {
                     logout()
-                    router.push("/")
+                    router.push("/login")
                     setSheetOpen(false)
                   }}
                   className="flex flex-col items-center gap-1.5 rounded-2xl p-3 text-[11px] font-semibold text-rose-600 bg-rose-50/70 hover:bg-rose-100 transition-all tap-bounce"
@@ -239,7 +243,7 @@ export function MobileNav({
             type="button"
             onClick={() => {
               logout()
-              router.push("/")
+              router.push("/login")
             }}
             className="flex flex-col items-center justify-center gap-0.5 rounded-2xl py-1.5 px-2 text-[10px] font-medium text-slate-400 hover:text-rose-500 transition-all tap-bounce min-w-0 flex-1"
             title="Keluar"

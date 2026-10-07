@@ -261,7 +261,14 @@ export function ChatInterface() {
                   <User className="h-3.5 w-3.5 text-white" />
                 </div>
                 <span className="text-xs font-medium text-emerald-700 max-w-[100px] truncate">{user.name}</span>
-                <button onClick={logout} className="ml-1 text-emerald-400 hover:text-emerald-600 transition-colors">
+                <button
+                  onClick={async () => {
+                    await logout()
+                    router.push("/login")
+                  }}
+                  className="ml-1 text-emerald-400 hover:text-emerald-600 transition-colors"
+                  title="Keluar"
+                >
                   <LogOut className="h-3.5 w-3.5" />
                 </button>
               </div>

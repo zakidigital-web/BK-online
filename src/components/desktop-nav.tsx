@@ -19,6 +19,7 @@ const studentItems = [
 
 const adminFullItems = [
   { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/asesmen", icon: Compass, label: "Pusat Asesmen" },
   { href: "/admin/curhat", icon: MessageCircleHeart, label: "Kelola Curhat" },
   { href: "/admin/laporan", icon: FileText, label: "Laporan" },
   { href: "/admin/siswa", icon: Users, label: "Data Siswa" },
@@ -33,6 +34,7 @@ const adminFullItems = [
 
 const guruBKItems = [
   { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/asesmen", icon: Compass, label: "Pusat Asesmen" },
   { href: "/admin/curhat", icon: MessageCircleHeart, label: "Kelola Curhat" },
   { href: "/admin/laporan", icon: FileText, label: "Laporan" },
   { href: "/admin/siswa", icon: Users, label: "Data Siswa" },
@@ -46,12 +48,14 @@ const guruBKItems = [
 
 const walasItems = [
   { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/asesmen", icon: Compass, label: "Pusat Asesmen" },
   { href: "/admin/laporan", icon: FileText, label: "Laporan" },
   { href: "/admin/siswa", icon: Users, label: "Data Siswa" },
   { href: "/admin/analisa", icon: BarChart3, label: "Analisa" },
 ]
 
 const guruMapelItems = [
+  { href: "/asesmen", icon: Compass, label: "Pusat Asesmen" },
   { href: "/guru/asesmen", icon: ClipboardList, label: "Gaya Mengajar" },
   { href: "/guru/psikologi", icon: BookOpen, label: "Psikologi Guru" },
   { href: "/guru/mbti", icon: Brain, label: "MBTI (Opsional)" },
@@ -149,7 +153,7 @@ export function DesktopNav({
           variant="outline"
           size="sm"
           className="w-full gap-2 text-gray-500"
-          onClick={() => { logout(); router.push("/") }}
+          onClick={() => { logout(); router.push("/login") }}
         >
           <LogOut className="h-4 w-4" /> Keluar
         </Button>

@@ -17,18 +17,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const canAccessStudentMenu = Boolean(user)
 
   useEffect(() => {
-    if (user && user.role !== "siswa") {
-      router.replace("/admin/dashboard")
-      return
-    }
     if (!user && !isCurhatPage) {
-      router.replace("/curhat")
+      router.replace("/login")
     }
   }, [isCurhatPage, router, user])
 
-  if (user && user.role !== "siswa") {
-    return null
-  }
   if (!user && !isCurhatPage) {
     return null
   }
@@ -36,13 +29,13 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   return (
     <div className="min-h-dvh bg-slate-50 flex flex-col">
       <MobileTopBar />
-      <DesktopNav role="siswa" authenticated={canAccessStudentMenu} />
+      <DesktopNav role={user?.role || "siswa"} authenticated={canAccessStudentMenu} />
       <main className="flex-1 pb-28 md:ml-64 md:pb-8">
         <div className="mx-auto max-w-4xl px-3.5 py-3 sm:px-6 lg:px-8">
           {children}
         </div>
       </main>
-      <MobileNav role="siswa" authenticated={canAccessStudentMenu} />
+      <MobileNav role={user?.role || "siswa"} authenticated={canAccessStudentMenu} />
     </div>
   )
 }
