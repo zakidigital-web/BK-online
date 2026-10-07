@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs"
 const demoAccounts = [
   { email: "admin", name: "Admin", password: "admin123", role: "admin" },
   { email: "guru", name: "Guru BK", password: "guru123", role: "guru" },
+  { email: "gurumapel", name: "Guru Mapel", password: "guru123", role: "guru-mapel" },
   { email: "walas", name: "Wali Kelas", password: "walas123", role: "walas" },
   { email: "siswa", name: "Siswa Demo", password: "siswa123", role: "siswa" },
 ]

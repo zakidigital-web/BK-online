@@ -32,8 +32,9 @@ export default function LoginPage() {
   const roleAccounts = [
     { role: "Admin", icon: ShieldCheck, username: "admin", password: "admin123", color: "purple" },
     { role: "Guru BK", icon: GraduationCap, username: "guru", password: "guru123", color: "blue" },
+    { role: "Guru Mapel", icon: BookOpen, username: "gurumapel", password: "guru123", color: "teal" },
     { role: "Wali Kelas", icon: Users, username: "walas", password: "walas123", color: "amber" },
-    { role: "Siswa", icon: BookOpen, username: "siswa", password: "siswa123", color: "emerald" },
+    { role: "Siswa", icon: GraduationCap, username: "siswa", password: "siswa123", color: "emerald" },
   ]
 
   async function handleSubmit(e: React.FormEvent) {
@@ -102,9 +103,10 @@ export default function LoginPage() {
                   Pilih peran untuk isi otomatis (demo)
                 </div>
                 <div className="grid grid-cols-2 gap-2">
-                  {roleAccounts.map((acc) => {
+                  {roleAccounts.map((acc, idx) => {
                     const Icon = acc.icon
                     const isSelected = selectedRole === acc.role
+                    const isLastOdd = idx === roleAccounts.length - 1 && roleAccounts.length % 2 !== 0
                     return (
                       <button key={acc.role} type="button"
                         onClick={() => {
@@ -112,11 +114,14 @@ export default function LoginPage() {
                           setForm({ username: acc.username, password: acc.password })
                         }}
                         className={`flex items-center gap-2 rounded-xl border-2 p-3 text-left text-sm transition-all ${
+                          isLastOdd ? "col-span-2" : ""
+                        } ${
                           isSelected ? "border-indigo-500 bg-indigo-50" : "border-slate-200 bg-slate-50 hover:border-slate-300"
                         }`}>
-                        <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                        <div className={`flex h-8 w-8 items-center justify-center rounded-lg shrink-0 ${
                           acc.color === "purple" ? "bg-purple-100 text-purple-600" :
                           acc.color === "blue" ? "bg-blue-100 text-blue-600" :
+                          acc.color === "teal" ? "bg-teal-100 text-teal-600" :
                           acc.color === "amber" ? "bg-amber-100 text-amber-600" :
                           "bg-emerald-100 text-emerald-600"
                         }`}>

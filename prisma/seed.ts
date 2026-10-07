@@ -34,6 +34,31 @@ async function main() {
   })
 
   await prisma.user.upsert({
+    where: { email: "gurumapel" },
+    update: {},
+    create: {
+      name: "Budi Santoso, S.Pd.",
+      email: "gurumapel",
+      password: guruPassword,
+      role: "guru-mapel",
+      mapel: "Matematika",
+    },
+  })
+
+  const walasPassword = await bcrypt.hash("walas123", 10)
+  await prisma.user.upsert({
+    where: { email: "walas" },
+    update: {},
+    create: {
+      name: "Wali Kelas 8A",
+      email: "walas",
+      password: walasPassword,
+      role: "walas",
+      kelas: "8A",
+    },
+  })
+
+  await prisma.user.upsert({
     where: { email: "siswa" },
     update: {},
     create: {
