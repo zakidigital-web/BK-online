@@ -10,6 +10,8 @@ export async function DELETE(req: Request) {
       await prisma.psikologi.deleteMany()
       await prisma.gayaBelajar.deleteMany()
       await prisma.karakterDiri.deleteMany()
+      await prisma.mbti.deleteMany()
+      await prisma.retakeRequest.deleteMany()
     }
     if (target === "all" || target === "chat") {
       await prisma.chatMessage.deleteMany()
@@ -19,6 +21,8 @@ export async function DELETE(req: Request) {
       await prisma.psikologi.deleteMany()
       await prisma.gayaBelajar.deleteMany()
       await prisma.karakterDiri.deleteMany()
+      await prisma.mbti.deleteMany()
+      await prisma.retakeRequest.deleteMany()
       await prisma.chatMessage.deleteMany({ where: { userId: { not: null } } })
       await prisma.user.deleteMany({ where: { role: "siswa" } })
       await prisma.siswa.deleteMany()
@@ -27,6 +31,7 @@ export async function DELETE(req: Request) {
       await prisma.kelas.deleteMany()
     }
     if (target === "all" || target === "users") {
+      await prisma.guruAsesmen.deleteMany()
       await prisma.chatMessage.deleteMany()
       await prisma.user.deleteMany()
     }

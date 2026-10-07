@@ -87,7 +87,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data.user as User
   }, [])
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" })
+    } catch {
+      // ignore network errors on logout
+    }
     localStorage.removeItem(AUTH_STORAGE_KEY)
     notifyAuthChange()
   }, [])

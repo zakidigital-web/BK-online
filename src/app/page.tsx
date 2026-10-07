@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "@/lib/theme-context"
 import { BannerSlider } from "@/components/banner-slider"
 import { OnlineIndicator } from "@/components/online-indicator"
+import { ThreeHeroBackground } from "@/components/three-hero-background"
 import {
   MessageCircleHeart, Brain, Sparkles, BookOpen, BarChart3, Shield,
   Menu, X, GraduationCap,   ArrowRight, School, Heart,
@@ -117,6 +118,7 @@ export default function HomePage() {
             <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full opacity-20" style={{ backgroundColor: presets[preset]?.hex || "#4f46e5", filter: "blur(100px)" }} />
             <div className="absolute -bottom-40 -left-40 w-[400px] h-[400px] rounded-full opacity-10" style={{ backgroundColor: presets[preset]?.hex || "#4f46e5", filter: "blur(100px)" }} />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-transparent to-slate-900/60" />
+            <ThreeHeroBackground primaryColor={presets[preset]?.hex || "#4f46e5"} />
           </div>
           <div className="relative mx-auto max-w-6xl px-4 py-24 sm:py-32 sm:px-6">
             <div className="grid lg:grid-cols-2 gap-12 items-center">

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
+import { createSessionToken } from "@/lib/session"
 
 export async function POST(req: Request) {
   try {
@@ -20,21 +21,40 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Akun belum diaktifkan oleh admin. Silakan hubungi Guru BK." }, { status: 403 })
     }
 
-    return NextResponse.json({
-      user: {
-        id: user.id,
-        name: user.name,
-        username: user.email,
-        role: user.role,
-        anonymousId: user.anonymousId,
-        nipy: user.nipy,
-        kelas: user.kelas,
-        mapel: user.mapel,
-        status: user.status,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      },
+    const userData = {
+      id: user.id,
+      name: user.name,
+      username: user.email,
+      role: user.role,
+      anonymousId: user.anonymousId,
+      nipy: user.nipy,
+      kelas: user.kelas,
+      mapel: user.mapel,
+      status: user.status,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    }
+
+    const token = await createSessionToken({
+      id: user.id,
+      name: user.name,
+      username: user.email,
+      role: user.role,
+      anonymousId: user.anonymousId,
     })
+
+    const response = NextResponse.json({ user: userData })
+
+    // Set secure httpOnly cookie
+    response.cookies.set("bk_session", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
+      path: "/",
+    })
+
+    return response
   } catch {
     return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
   }

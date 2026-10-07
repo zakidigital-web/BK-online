@@ -247,17 +247,32 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Jenis tidak valid" }, { status: 400 })
     }
 
+    // If DB has 0 questions for this jenis, seed the default questions first so we don't lose them
+    const existingCount = await prisma.soalAsesmen.count({ where: { jenis } })
+    if (existingCount === 0) {
+      const defaults = defaultQuestions[jenis] || []
+      await prisma.soalAsesmen.createMany({
+        data: defaults.map((q, idx) => ({
+          jenis,
+          nomor: idx + 1,
+          teks: q.teks,
+          dimensi: q.dimensi || "",
+        })),
+      })
+    }
+
     const max = await prisma.soalAsesmen.findFirst({
       where: { jenis },
       orderBy: { nomor: "desc" },
     })
-    const nextNomor = (max?.nomor || defaultQuestions[jenis].length) + 1
+    const nextNomor = (max?.nomor || 0) + 1
 
     const soal = await prisma.soalAsesmen.create({
       data: { jenis, nomor: nextNomor, teks, dimensi: dimensi || "" },
     })
     return NextResponse.json({ soal })
-  } catch {
+  } catch (error) {
+    console.error("Error creating soal:", error)
     return NextResponse.json({ error: "Gagal menambah pertanyaan" }, { status: 500 })
   }
 }

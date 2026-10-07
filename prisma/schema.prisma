@@ -8,51 +8,59 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  nipy      String?
-  role      String   @default("guru")
-  kelas     String?
-  mapel     String?
-  status      String   @default("active")
-  anonymousId String?  @unique
+  id          String    @id @default(cuid())
+  name        String
+  email       String    @unique
+  password    String
+  nipy        String?
+  role        String    @default("guru")
+  kelas       String?
+  mapel       String?
+  status      String    @default("active")
+  anonymousId String?   @unique
   lastSeen    DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   chatMessages ChatMessage[]
-  guruAsesmen   GuruAsesmen?
+  guruAsesmen  GuruAsesmen?
+
+  @@index([role])
 }
 
 model ChatMessage {
-  id           String   @id @default(cuid())
-  anonymousId  String
-  message      String
-  senderRole   String   @default("siswa")
-  userId       String?
-  user         User?    @relation(fields: [userId], references: [id])
-  replyToId    String?
-  replyTo      ChatMessage? @relation("ChatReplies", fields: [replyToId], references: [id])
-  replies      ChatMessage[] @relation("ChatReplies")
-  createdAt    DateTime @default(now())
+  id          String        @id @default(cuid())
+  anonymousId String
+  message     String
+  senderRole  String        @default("siswa")
+  userId      String?
+  user        User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  replyToId   String?
+  replyTo     ChatMessage?  @relation("ChatReplies", fields: [replyToId], references: [id], onDelete: Cascade)
+  replies     ChatMessage[] @relation("ChatReplies")
+  createdAt   DateTime      @default(now())
+
+  @@index([anonymousId, createdAt])
+  @@index([createdAt])
+  @@index([userId])
 }
 
 model Siswa {
   id        String   @id @default(cuid())
   nama      String
   kelas     String
-  nisn      String?
+  nisn      String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  minatBakat    MinatBakat[]
-  psikologi     Psikologi[]
-  gayaBelajar   GayaBelajar[]
-  karakterDiri  KarakterDiri[]
-  mbti          Mbti[]
+  minatBakat     MinatBakat[]
+  psikologi      Psikologi[]
+  gayaBelajar    GayaBelajar[]
+  karakterDiri   KarakterDiri[]
+  mbti           Mbti[]
   retakeRequests RetakeRequest[]
+
+  @@index([kelas, nama])
 }
 
 model Kelas {
@@ -65,72 +73,83 @@ model Kelas {
 model MinatBakat {
   id        String   @id @default(cuid())
   siswaId   String
-  siswa     Siswa    @relation(fields: [siswaId], references: [id])
+  siswa     Siswa    @relation(fields: [siswaId], references: [id], onDelete: Cascade)
   jawaban   String
   skor      String
   createdAt DateTime @default(now())
+
+  @@index([siswaId, createdAt])
 }
 
 model Psikologi {
   id        String   @id @default(cuid())
   siswaId   String
-  siswa     Siswa    @relation(fields: [siswaId], references: [id])
+  siswa     Siswa    @relation(fields: [siswaId], references: [id], onDelete: Cascade)
   jawaban   String
   skor      String
   createdAt DateTime @default(now())
+
+  @@index([siswaId, createdAt])
 }
 
 model GayaBelajar {
   id        String   @id @default(cuid())
   siswaId   String
-  siswa     Siswa    @relation(fields: [siswaId], references: [id])
+  siswa     Siswa    @relation(fields: [siswaId], references: [id], onDelete: Cascade)
   jawaban   String
   skor      String
   createdAt DateTime @default(now())
+
+  @@index([siswaId, createdAt])
 }
 
 model KarakterDiri {
-  id           String   @id @default(cuid())
-  siswaId      String
-  siswa        Siswa    @relation(fields: [siswaId], references: [id])
-  jawaban      String
-  skor         String
+  id            String   @id @default(cuid())
+  siswaId       String
+  siswa         Siswa    @relation(fields: [siswaId], references: [id], onDelete: Cascade)
+  jawaban       String
+  skor          String
   nilaiPersonal String?
-  createdAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([siswaId, createdAt])
 }
 
 model Mbti {
   id        String   @id @default(cuid())
   siswaId   String
-  siswa     Siswa    @relation(fields: [siswaId], references: [id])
+  siswa     Siswa    @relation(fields: [siswaId], references: [id], onDelete: Cascade)
   jawaban   String
   skor      String
   createdAt DateTime @default(now())
+
+  @@index([siswaId, createdAt])
 }
 
 model RetakeRequest {
   id        String   @id @default(cuid())
   siswaId   String
-  siswa     Siswa    @relation(fields: [siswaId], references: [id])
+  siswa     Siswa    @relation(fields: [siswaId], references: [id], onDelete: Cascade)
   jenis     String
   status    String   @default("pending")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([siswaId, jenis])
+  @@index([siswaId])
 }
 
 model GuruAsesmen {
-  id        String   @id @default(cuid())
-  guruId    String
-  guru      User     @relation(fields: [guruId], references: [id])
-  jawaban   String   @default("{}")
-  skor      String   @default("{}")
-  jawabanPsikologi String @default("{}")
-  skorPsikologi    String @default("{}")
-  jawabanMbti      String @default("{}")
-  skorMbti         String @default("{}")
-  createdAt DateTime @default(now())
+  id               String   @id @default(cuid())
+  guruId           String
+  guru             User     @relation(fields: [guruId], references: [id], onDelete: Cascade)
+  jawaban          String   @default("{}")
+  skor             String   @default("{}")
+  jawabanPsikologi String   @default("{}")
+  skorPsikologi    String   @default("{}")
+  jawabanMbti      String   @default("{}")
+  skorMbti         String   @default("{}")
+  createdAt        DateTime @default(now())
 
   @@unique([guruId])
 }
@@ -165,4 +184,6 @@ model Banner {
   urutan    Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([aktif, urutan])
 }

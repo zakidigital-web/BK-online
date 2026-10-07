@@ -3,23 +3,28 @@ import { prisma } from "@/lib/db"
 import { syncUserFromSiswa, deleteUserFromSiswa, updateUserFromSiswa } from "@/lib/siswa-sync"
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const kelas = searchParams.get("kelas")
-  const nisn = searchParams.get("nisn")
+  try {
+    const { searchParams } = new URL(req.url)
+    const kelas = searchParams.get("kelas")
+    const nisn = searchParams.get("nisn")
 
-  const where: Record<string, unknown> = {}
-  if (kelas) where.kelas = kelas
-  if (nisn) where.nisn = nisn
+    const where: Record<string, unknown> = {}
+    if (kelas) where.kelas = kelas
+    if (nisn) where.nisn = nisn
 
-  const siswa = await prisma.siswa.findMany({
-    where,
-    include: {
-      _count: { select: { minatBakat: true, psikologi: true, gayaBelajar: true, karakterDiri: true } },
-    },
-    orderBy: [{ kelas: "asc" }, { nama: "asc" }],
-  })
+    const siswa = await prisma.siswa.findMany({
+      where,
+      include: {
+        _count: { select: { minatBakat: true, psikologi: true, gayaBelajar: true, karakterDiri: true } },
+      },
+      orderBy: [{ kelas: "asc" }, { nama: "asc" }],
+    })
 
-  return NextResponse.json({ siswa })
+    return NextResponse.json({ siswa })
+  } catch (error) {
+    console.error("Error fetching siswa:", error)
+    return NextResponse.json({ error: "Gagal mengambil data siswa", siswa: [] }, { status: 500 })
+  }
 }
 
 export async function POST(req: Request) {

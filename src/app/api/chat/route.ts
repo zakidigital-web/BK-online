@@ -23,16 +23,29 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const { anonymousId, message, senderRole, userId } = await req.json()
+
+    const trimmedMsg = String(message || "").trim()
+    const trimmedAnonId = String(anonymousId || "").trim()
+
+    if (!trimmedAnonId || !trimmedMsg) {
+      return NextResponse.json({ error: "ID sesi anonim dan pesan tidak boleh kosong" }, { status: 400 })
+    }
+
+    if (trimmedMsg.length > 2000) {
+      return NextResponse.json({ error: "Pesan maksimal 2000 karakter" }, { status: 400 })
+    }
+
     const msg = await prisma.chatMessage.create({
       data: {
-        anonymousId,
-        message,
+        anonymousId: trimmedAnonId,
+        message: trimmedMsg,
         senderRole: senderRole || "siswa",
         userId: userId || null,
       },
     })
     return NextResponse.json({ message: msg })
   } catch (error) {
+    console.error("Error creating chat message:", error)
     return NextResponse.json({ error: "Gagal mengirim pesan" }, { status: 500 })
   }
 }
