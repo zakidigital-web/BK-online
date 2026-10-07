@@ -35,7 +35,8 @@ export async function POST(req: Request) {
         updatedAt: user.updatedAt,
       },
     })
-  } catch {
+  } catch (error: any) {
+    console.error("[REGISTER_SERVER_ERROR]:", error)
     return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
   }
 }

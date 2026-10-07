@@ -7,7 +7,12 @@ export async function POST(req: Request) {
   try {
     const { username, password } = await req.json()
     const rawUsername = String(username || "").trim()
+    const rawPassword = String(password || "")
     const normalizedUsername = rawUsername.toLowerCase()
+
+    if (!rawUsername || !rawPassword) {
+      return NextResponse.json({ error: "Username dan password wajib diisi" }, { status: 400 })
+    }
 
     // Map common aliases to their official user emails
     let targetEmail = normalizedUsername
@@ -36,7 +41,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Username tidak terdaftar" }, { status: 401 })
     }
 
-    const isValid = await bcrypt.compare(password, user.password)
+    if (!user.password || typeof user.password !== "string") {
+      return NextResponse.json({ error: "Akun ini belum memiliki password yang valid" }, { status: 400 })
+    }
+
+    const isValid = await bcrypt.compare(rawPassword, user.password)
     if (!isValid) {
       return NextResponse.json({ error: "Password salah" }, { status: 401 })
     }
@@ -79,7 +88,14 @@ export async function POST(req: Request) {
     })
 
     return response
-  } catch {
-    return NextResponse.json({ error: "Terjadi kesalahan server" }, { status: 500 })
+  } catch (error: any) {
+    console.error("[LOGIN_SERVER_ERROR]:", error)
+    return NextResponse.json(
+      {
+        error: "Terjadi kesalahan server",
+        details: process.env.NODE_ENV !== "production" ? error?.message : undefined,
+      },
+      { status: 500 }
+    )
   }
 }
