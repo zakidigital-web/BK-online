@@ -123,10 +123,14 @@
   }
   body {
     @apply bg-background text-foreground;
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
   }
   html {
     @apply font-sans;
     -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    touch-action: manipulation;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -136,10 +140,33 @@
   }
 }
 
+/* Native App Mobile Utilities */
 .safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
 }
 
 .safe-area-top {
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
 }
+
+.tap-bounce {
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.tap-bounce:active {
+  transform: scale(0.96);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.native-glass {
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+

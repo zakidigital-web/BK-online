@@ -372,8 +372,8 @@ export function ChatInterface() {
       </div>
 
       {/* CHAT AREA */}
-      <Card className="border-0 shadow-sm overflow-hidden">
-        <ScrollArea className="h-[420px]">
+      <Card className="border-0 shadow-sm overflow-hidden rounded-2xl bg-white">
+        <ScrollArea className="h-[52vh] sm:h-[460px]">
           <div className="p-4">
             {!hasMessages ? (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center py-8 text-center">

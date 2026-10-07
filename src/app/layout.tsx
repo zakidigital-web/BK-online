@@ -14,14 +14,28 @@ const roboto = Roboto({
 
 export const metadata: Metadata = {
   title: "BK — SMP Negeri 1 Genteng",
-  description: "Aplikasi Bimbingan Konseling untuk siswa SMP/SMA",
+  description: "Aplikasi Bimbingan Konseling Digital untuk Siswa SMP Negeri 1 Genteng",
+  applicationName: "BK Online",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "BK Online",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 }
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
-  themeColor: "#6366F1",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
+    { media: "(prefers-color-scheme: dark)", color: "#0F172A" },
+  ],
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

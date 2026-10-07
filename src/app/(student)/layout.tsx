@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation"
 
 import { DesktopNav } from "@/components/desktop-nav"
 import { MobileNav } from "@/components/mobile-nav"
+import { MobileTopBar } from "@/components/mobile-top-bar"
 import { useAuth } from "@/lib/auth-context"
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
@@ -33,10 +34,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   }
 
   return (
-    <div className="min-h-dvh bg-gray-50">
+    <div className="min-h-dvh bg-slate-50 flex flex-col">
+      <MobileTopBar />
       <DesktopNav role="siswa" authenticated={canAccessStudentMenu} />
-      <main className="pb-20 md:ml-64 md:pb-0">
-        <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
+      <main className="flex-1 pb-28 md:ml-64 md:pb-8">
+        <div className="mx-auto max-w-4xl px-3.5 py-3 sm:px-6 lg:px-8">
           {children}
         </div>
       </main>
