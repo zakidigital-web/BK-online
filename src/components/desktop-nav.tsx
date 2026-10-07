@@ -39,7 +39,6 @@ const guruBKItems = [
   { href: "/admin/siswa", icon: Users, label: "Database Siswa" },
   { href: "/admin/retake", icon: RotateCcw, label: "Verifikasi Retake" },
   { href: "/admin/analisa", icon: BarChart3, label: "Analisis Psikologi" },
-  { href: "/asesmen", icon: Compass, label: "Pusat Asesmen Siswa" },
   { href: "/guru/asesmen", icon: ClipboardList, label: "Asesmen Gaya Mengajar" },
   { href: "/guru/psikologi", icon: BookOpen, label: "Psikologi Pendidik" },
   { href: "/guru/mbti", icon: Brain, label: "MBTI Guru" },
@@ -51,7 +50,6 @@ const walasItems = [
   { href: "/admin/laporan", icon: FileText, label: "Laporan Kelas Binaan" },
   { href: "/admin/siswa", icon: Users, label: "Daftar Siswa Kelas" },
   { href: "/admin/analisa", icon: BarChart3, label: "Analisis Gaya & Minat" },
-  { href: "/asesmen", icon: Compass, label: "Pusat Asesmen" },
   { href: "/guru/asesmen", icon: ClipboardList, label: "Asesmen Gaya Mengajar" },
 ]
 
@@ -62,7 +60,6 @@ const guruMapelItems = [
   { href: "/guru/psikologi", icon: BookOpen, label: "Psikologi Pendidik" },
   { href: "/guru/mbti", icon: Brain, label: "MBTI Guru" },
   { href: "/guru/laporan", icon: FileText, label: "Portofolio Hasil Saya" },
-  { href: "/asesmen", icon: Compass, label: "Pusat Asesmen Siswa" },
 ]
 
 export function DesktopNav({

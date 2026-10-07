@@ -20,6 +20,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     if (loading) return
     if (!user && !isCurhatPage) {
       router.replace("/login")
+      return
+    }
+    // Teachers, staff, and admin are not allowed in student assessment center / beranda
+    if (user && user.role !== "siswa" && !isCurhatPage) {
+      router.replace("/admin/dashboard")
     }
   }, [isCurhatPage, loading, router, user])
 
@@ -34,7 +39,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     )
   }
 
-  if (!user && !isCurhatPage) {
+  if ((!user || user.role !== "siswa") && !isCurhatPage) {
     return null
   }
 

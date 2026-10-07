@@ -39,19 +39,40 @@ export async function middleware(request: NextRequest) {
     return applySecurityHeaders(NextResponse.next())
   }
 
-  // 2. Check if route is protected
+  // 2. Student assessment routes: strictly for siswa role!
+  const isStudentAssessmentRoute =
+    pathname === "/asesmen" ||
+    pathname.startsWith("/asesmen/") ||
+    pathname === "/karakter" ||
+    pathname === "/beranda"
+
+  // 3. Admin / Guru routes
   const isAdminRoute = pathname.startsWith("/admin") || pathname.startsWith("/api/admin")
   const isGuruRoute = pathname.startsWith("/guru") || pathname.startsWith("/api/guru")
 
-  if (!isAdminRoute && !isGuruRoute) {
+  if (!isStudentAssessmentRoute && !isAdminRoute && !isGuruRoute) {
     return applySecurityHeaders(NextResponse.next())
   }
 
-  // 3. Extract and verify session token from cookie
+  // 4. Extract and verify session token from cookie
   const sessionCookie = request.cookies.get("bk_session")?.value
   const session = sessionCookie ? await verifySessionToken(sessionCookie) : null
 
-  // 4. Handle unauthorized API requests
+  // 5. Handle student assessment route access
+  if (isStudentAssessmentRoute) {
+    if (!session) {
+      const loginUrl = new URL("/login", request.url)
+      loginUrl.searchParams.set("callbackUrl", pathname)
+      return applySecurityHeaders(NextResponse.redirect(loginUrl))
+    }
+    // Teachers / staff / admin are strictly forbidden from student assessment center
+    if (session.role !== "siswa") {
+      return applySecurityHeaders(NextResponse.redirect(new URL("/admin/dashboard", request.url)))
+    }
+    return applySecurityHeaders(NextResponse.next())
+  }
+
+  // 6. Handle unauthorized API requests
   const isApi = pathname.startsWith("/api/")
   if (!session) {
     if (isApi) {
@@ -63,7 +84,7 @@ export async function middleware(request: NextRequest) {
     return applySecurityHeaders(NextResponse.redirect(loginUrl))
   }
 
-  // 5. Role-based authorization
+  // 7. Role-based authorization
   const isSuperAdminRoute =
     ((pathname === "/admin/guru" ||
       pathname.startsWith("/admin/guru/import") ||
@@ -109,6 +130,10 @@ export const config = {
     "/api/admin/:path*",
     "/api/guru/:path*",
     "/api/auth/login",
+    "/asesmen/:path*",
+    "/asesmen",
+    "/karakter",
+    "/beranda",
   ],
 }
 

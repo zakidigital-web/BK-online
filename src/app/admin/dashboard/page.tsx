@@ -477,9 +477,9 @@ function GuruBKBeranda({ stats, user }: { stats: any; user: any }) {
                   <MessageCircleHeart className="h-4 w-4" /> Buka Ruang Konseling ({stats.totalChat})
                 </Button>
               </Link>
-              <Link href="/asesmen">
+              <Link href="/admin/laporan">
                 <Button variant="outline" className="rounded-xl bg-white/10 hover:bg-white/20 border-white/20 text-white text-xs gap-1.5">
-                  <Compass className="h-4 w-4" /> Simulasi Asesmen Siswa
+                  <FileText className="h-4 w-4" /> Rekap Laporan Asesmen
                 </Button>
               </Link>
             </div>

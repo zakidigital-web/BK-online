@@ -64,7 +64,6 @@ const guruBKItems: NavItem[] = [
   { href: "/admin/laporan", icon: FileText, label: "Laporan" },
   { href: "/admin/siswa", icon: Users, label: "Siswa" },
   { href: "/admin/retake", icon: RotateCcw, label: "Retake" },
-  { href: "/asesmen", icon: Compass, label: "Asesmen" },
   { href: "/admin/analisa", icon: BarChart3, label: "Analisa" },
   { href: "/guru/asesmen", icon: ClipboardList, label: "Mengajar" },
   { href: "/guru/psikologi", icon: BookOpen, label: "Psikologi" },
@@ -77,7 +76,6 @@ const walasItems: NavItem[] = [
   { href: "/admin/laporan", icon: FileText, label: "Laporan" },
   { href: "/admin/siswa", icon: Users, label: "Siswa" },
   { href: "/admin/analisa", icon: BarChart3, label: "Analisa" },
-  { href: "/asesmen", icon: Compass, label: "Asesmen" },
   { href: "/guru/asesmen", icon: ClipboardList, label: "Mengajar" },
 ]
 
@@ -88,7 +86,6 @@ const guruMapelItems: NavItem[] = [
   { href: "/guru/psikologi", icon: BookOpen, label: "Psikologi" },
   { href: "/guru/mbti", icon: Brain, label: "MBTI" },
   { href: "/guru/laporan", icon: FileText, label: "Laporan" },
-  { href: "/asesmen", icon: Compass, label: "Asesmen" },
 ]
 
 const MAX_VISIBLE = 5
