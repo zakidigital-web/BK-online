@@ -4,9 +4,17 @@ import { labelDimensi as riasecLabel, rekomendasiKarier } from "@/lib/asesmen/mi
 import { interpretasi } from "@/lib/asesmen/psikologi"
 import { labelGaya } from "@/lib/asesmen/gaya-belajar"
 import { labelDimensiKarakter } from "@/lib/asesmen/karakter"
+import { getServerSession } from "@/lib/session"
+
+const staffRoles = ["admin", "guru", "walas", "guru-mapel", "guru_bk", "guru-bk"]
 
 export async function GET(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session) {
+      return NextResponse.json({ error: "Sesi tidak valid atau telah berakhir" }, { status: 401 })
+    }
+
     const { searchParams } = new URL(req.url)
     const id = searchParams.get("id")
 
@@ -26,6 +34,10 @@ export async function GET(req: Request) {
 
     if (!siswa) {
       return NextResponse.json({ error: "Siswa tidak ditemukan" }, { status: 404 })
+    }
+
+    if (session.role === "siswa" && session.username !== siswa.nisn) {
+      return NextResponse.json({ error: "Akses ditolak: Anda hanya dapat melihat analisa Anda sendiri" }, { status: 403 })
     }
 
     let riasec: Record<string, number> | null = null

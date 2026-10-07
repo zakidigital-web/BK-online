@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
+import { getServerSession } from "@/lib/session"
 
 const demoAccounts = [
   { email: "admin", name: "Admin", password: "admin123", role: "admin" },
@@ -12,9 +13,15 @@ const demoAccounts = [
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession()
     const authHeader = req.headers.get("authorization")
-    if (authHeader !== `Bearer ${process.env.SEED_SECRET || "bk-seed-local"}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+
+    const isAdminSession = session?.role === "admin"
+    const hasValidSecret = process.env.SEED_SECRET && authHeader === `Bearer ${process.env.SEED_SECRET}`
+    const isDevFallback = process.env.NODE_ENV !== "production" && authHeader === "Bearer bk-seed-local"
+
+    if (!isAdminSession && !hasValidSecret && !isDevFallback) {
+      return NextResponse.json({ error: "Unauthorized: Memerlukan sesi admin atau token rahasia valid" }, { status: 401 })
     }
 
     let created = 0

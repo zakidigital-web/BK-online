@@ -1,11 +1,21 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { getServerSession } from "@/lib/session"
 
 export async function PATCH(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session) {
+      return NextResponse.json({ error: "Sesi tidak valid atau telah berakhir" }, { status: 401 })
+    }
+
     const { userId, anonymousId } = await req.json()
     if (!userId || !anonymousId) {
       return NextResponse.json({ error: "userId dan anonymousId diperlukan" }, { status: 400 })
+    }
+
+    if (session.id !== userId && session.role !== "admin") {
+      return NextResponse.json({ error: "Akses ditolak" }, { status: 403 })
     }
 
     const existing = await prisma.user.findUnique({ where: { anonymousId } })
@@ -34,9 +44,18 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session) {
+      return NextResponse.json({ error: "Sesi tidak valid atau telah berakhir" }, { status: 401 })
+    }
+
     const { userId } = await req.json()
     if (!userId) {
       return NextResponse.json({ error: "userId diperlukan" }, { status: 400 })
+    }
+
+    if (session.id !== userId && session.role !== "admin") {
+      return NextResponse.json({ error: "Akses ditolak" }, { status: 403 })
     }
 
     const user = await prisma.user.update({

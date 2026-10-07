@@ -1,12 +1,22 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { getServerSession } from "@/lib/session"
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session) {
+      return NextResponse.json({ error: "Sesi tidak valid atau telah berakhir" }, { status: 401 })
+    }
+
     const { nisn, jenis } = await req.json()
 
     if (!nisn || !jenis) {
       return NextResponse.json({ error: "nisn dan jenis diperlukan" }, { status: 400 })
+    }
+
+    if (session.role === "siswa" && session.username !== nisn) {
+      return NextResponse.json({ error: "Akses ditolak: Anda hanya dapat mengajukan retake untuk akun Anda sendiri" }, { status: 403 })
     }
 
     const allowed = ["minat-bakat", "psikologi", "gaya-belajar", "karakter", "mbti"]

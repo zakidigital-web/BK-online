@@ -36,20 +36,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Username tidak terdaftar" }, { status: 401 })
     }
 
-    let isValid = await bcrypt.compare(password, user.password)
-    // Support common demo password variations
-    if (!isValid) {
-      if (
-        (user.email === "gurumapel" && (password === "gurumapel123" || password === "guru123")) ||
-        (user.email === "walas" && (password === "walas123" || password === "guru123")) ||
-        (user.email === "guru" && (password === "guru123" || password === "gurubk123")) ||
-        (user.email === "admin" && (password === "admin123" || password === "guru123")) ||
-        (user.email === "siswa" && password === "siswa123")
-      ) {
-        isValid = true
-      }
-    }
-
+    const isValid = await bcrypt.compare(password, user.password)
     if (!isValid) {
       return NextResponse.json({ error: "Password salah" }, { status: 401 })
     }

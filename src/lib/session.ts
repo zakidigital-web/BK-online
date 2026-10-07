@@ -7,12 +7,21 @@ export interface SessionPayload {
   exp: number
 }
 
-const SESSION_SECRET = process.env.SESSION_SECRET || "bk-online-super-secret-key-2026-production"
+function getSessionSecret(): string {
+  const secret = process.env.SESSION_SECRET
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("FATAL: SESSION_SECRET must be configured in environment variables!")
+    }
+    return "dev-bk-session-secret-local-development-only"
+  }
+  return secret
+}
 
 // Web Crypto API helpers (compatible with Node.js, Vercel Edge Runtime, and browser)
 async function getCryptoKey(): Promise<CryptoKey> {
   const encoder = new TextEncoder()
-  const keyData = encoder.encode(SESSION_SECRET)
+  const keyData = encoder.encode(getSessionSecret())
   return await crypto.subtle.importKey(
     "raw",
     keyData,
@@ -104,6 +113,18 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
 
     if (!payload.exp || Date.now() > payload.exp) return null
     return payload
+  } catch {
+    return null
+  }
+}
+
+export async function getServerSession(): Promise<SessionPayload | null> {
+  try {
+    const { cookies } = await import("next/headers")
+    const cookieStore = await cookies()
+    const token = cookieStore.get("bk_session")?.value
+    if (!token) return null
+    return await verifySessionToken(token)
   } catch {
     return null
   }

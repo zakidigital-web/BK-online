@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { getServerSession } from "@/lib/session"
+
+const staffRoles = ["admin", "guru", "walas", "guru-mapel", "guru_bk", "guru-bk"]
 
 export async function GET() {
   try {
@@ -12,6 +15,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session || !staffRoles.includes(session.role)) {
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Guru/Staff" }, { status: 403 })
+    }
+
     const { nama } = await req.json()
     const trimmed = String(nama || "").trim().toUpperCase()
     if (!trimmed) {
@@ -32,6 +40,11 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session || !staffRoles.includes(session.role)) {
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Guru/Staff" }, { status: 403 })
+    }
+
     const { id, nama } = await req.json()
     if (!id && !nama) {
       return NextResponse.json({ error: "ID atau nama kelas diperlukan" }, { status: 400 })

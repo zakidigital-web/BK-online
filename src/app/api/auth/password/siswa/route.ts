@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
+import { getServerSession } from "@/lib/session"
+
+const staffRoles = ["admin", "guru", "walas", "guru-mapel", "guru_bk", "guru-bk"]
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session || !staffRoles.includes(session.role)) {
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Guru/Staff" }, { status: 403 })
+    }
+
     const { siswaId } = await req.json()
     if (!siswaId) {
       return NextResponse.json({ error: "ID siswa diperlukan" }, { status: 400 })

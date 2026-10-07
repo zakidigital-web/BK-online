@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { generateNarasiLaporanSiswa } from "@/lib/asesmen/laporan"
+import { getServerSession } from "@/lib/session"
+
+const staffRoles = ["admin", "guru", "walas", "guru-mapel", "guru_bk", "guru-bk"]
 
 export async function GET(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session) {
+      return NextResponse.json({ error: "Sesi tidak valid atau telah berakhir" }, { status: 401 })
+    }
+
     const { searchParams } = new URL(req.url)
     const id = searchParams.get("id")
 
@@ -23,6 +31,10 @@ export async function GET(req: Request) {
 
     if (!siswa) {
       return NextResponse.json({ error: "Siswa tidak ditemukan" }, { status: 404 })
+    }
+
+    if (session.role === "siswa" && session.username !== siswa.nisn) {
+      return NextResponse.json({ error: "Akses ditolak: Anda hanya dapat melihat laporan Anda sendiri" }, { status: 403 })
     }
 
     let riasec = null

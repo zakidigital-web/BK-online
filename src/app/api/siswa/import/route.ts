@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { syncUserFromSiswa } from "@/lib/siswa-sync"
+import { getServerSession } from "@/lib/session"
+
+const staffRoles = ["admin", "guru", "walas", "guru-mapel", "guru_bk", "guru-bk"]
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session || !staffRoles.includes(session.role)) {
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Guru/Staff" }, { status: 403 })
+    }
+
     const { siswa } = await req.json()
     if (!Array.isArray(siswa) || siswa.length === 0) {
       return NextResponse.json({ error: "Data siswa tidak valid" }, { status: 400 })

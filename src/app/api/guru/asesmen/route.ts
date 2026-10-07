@@ -1,12 +1,23 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { hitungSkorGuru } from "@/lib/asesmen/guru"
+import { getServerSession } from "@/lib/session"
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session) {
+      return NextResponse.json({ error: "Sesi tidak valid atau telah berakhir" }, { status: 401 })
+    }
+
     const { guruId, jawaban } = await req.json()
     if (!guruId || !jawaban) {
       return NextResponse.json({ error: "guruId dan jawaban harus diisi" }, { status: 400 })
+    }
+
+    // IDOR protection: cannot submit assessment for another teacher unless admin
+    if (session.id !== guruId && session.role !== "admin") {
+      return NextResponse.json({ error: "Akses ditolak: Anda hanya dapat mengisi asesmen untuk akun sendiri" }, { status: 403 })
     }
 
     const user = await prisma.user.findUnique({ where: { id: guruId } })

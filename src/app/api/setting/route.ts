@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { getServerSession } from "@/lib/session"
 
 export async function GET() {
   try {
@@ -16,6 +17,11 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session || session.role !== "admin") {
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Super Administrator" }, { status: 403 })
+    }
+
     const { key, value } = await req.json()
     if (!key) {
       return NextResponse.json({ error: "Key diperlukan" }, { status: 400 })

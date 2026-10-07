@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
+import { getServerSession } from "@/lib/session"
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session || session.role !== "admin") {
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Super Administrator" }, { status: 403 })
+    }
+
     const { userId, newPassword } = await req.json()
 
     if (!userId || !newPassword) {

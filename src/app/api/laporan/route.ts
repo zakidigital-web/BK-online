@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server"
 import { generateLaporanKelas } from "@/lib/asesmen/laporan"
+import { getServerSession } from "@/lib/session"
+
+const staffRoles = ["admin", "guru", "walas", "guru-mapel", "guru_bk", "guru-bk"]
 
 export async function GET(req: Request) {
+  const session = await getServerSession()
+  if (!session || !staffRoles.includes(session.role)) {
+    return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Guru/Staff" }, { status: 403 })
+  }
+
   const { searchParams } = new URL(req.url)
   const kelas = searchParams.get("kelas")
 

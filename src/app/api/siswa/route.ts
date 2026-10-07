@@ -1,16 +1,29 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { syncUserFromSiswa, deleteUserFromSiswa, updateUserFromSiswa } from "@/lib/siswa-sync"
+import { getServerSession } from "@/lib/session"
+
+const staffRoles = ["admin", "guru", "walas", "guru-mapel", "guru_bk", "guru-bk"]
 
 export async function GET(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session) {
+      return NextResponse.json({ error: "Sesi tidak valid atau telah berakhir" }, { status: 401 })
+    }
+
     const { searchParams } = new URL(req.url)
     const kelas = searchParams.get("kelas")
     const nisn = searchParams.get("nisn")
 
     const where: Record<string, unknown> = {}
-    if (kelas) where.kelas = kelas
-    if (nisn) where.nisn = nisn
+    if (session.role === "siswa") {
+      // Siswa only permitted to see their own record
+      where.nisn = session.username
+    } else {
+      if (kelas) where.kelas = kelas
+      if (nisn) where.nisn = nisn
+    }
 
     const siswa = await prisma.siswa.findMany({
       where,
@@ -29,6 +42,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session || !staffRoles.includes(session.role)) {
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Guru/Staff" }, { status: 403 })
+    }
+
     const { nama, kelas, nisn } = await req.json()
     const trimmedNama = String(nama || "").trim()
     const trimmedKelas = String(kelas || "").trim().toUpperCase()
@@ -57,6 +75,11 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session || !staffRoles.includes(session.role)) {
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Guru/Staff" }, { status: 403 })
+    }
+
     const { id, nama, kelas, nisn } = await req.json()
     if (!id) {
       return NextResponse.json({ error: "ID siswa diperlukan" }, { status: 400 })
@@ -95,6 +118,11 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session || !staffRoles.includes(session.role)) {
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Guru/Staff" }, { status: 403 })
+    }
+
     const { id } = await req.json()
     if (!id) {
       return NextResponse.json({ error: "ID siswa diperlukan" }, { status: 400 })

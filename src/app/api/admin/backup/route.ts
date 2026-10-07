@@ -1,18 +1,33 @@
 import { NextResponse } from "next/server"
-import { readFileSync, existsSync } from "fs"
-import path from "path"
+import { prisma } from "@/lib/db"
+import { getServerSession } from "@/lib/session"
 
 export async function GET() {
   try {
-    const dbPath = path.join(process.cwd(), "prisma", "dev.db")
-    if (!existsSync(dbPath)) {
-      return NextResponse.json({ error: "Database tidak ditemukan" }, { status: 404 })
+    const session = await getServerSession()
+    if (!session || session.role !== "admin") {
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Super Administrator" }, { status: 403 })
     }
-    const buffer = readFileSync(dbPath)
+
+    const [users, siswa, kelas, settings, banners] = await Promise.all([
+      prisma.user.findMany({ select: { id: true, name: true, email: true, role: true, nipy: true, kelas: true, mapel: true, status: true, createdAt: true } }),
+      prisma.siswa.findMany(),
+      prisma.kelas.findMany(),
+      prisma.setting.findMany(),
+      prisma.banner.findMany(),
+    ])
+
+    const backupData = {
+      timestamp: new Date().toISOString(),
+      version: "1.0",
+      data: { users, siswa, kelas, settings, banners },
+    }
+
+    const buffer = Buffer.from(JSON.stringify(backupData, null, 2))
     return new NextResponse(buffer, {
       headers: {
-        "Content-Type": "application/octet-stream",
-        "Content-Disposition": `attachment; filename="bk-backup-${new Date().toISOString().slice(0, 10)}.db"`,
+        "Content-Type": "application/json",
+        "Content-Disposition": `attachment; filename="bk-backup-${new Date().toISOString().slice(0, 10)}.json"`,
       },
     })
   } catch {

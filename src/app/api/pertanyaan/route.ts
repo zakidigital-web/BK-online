@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { getServerSession } from "@/lib/session"
+
+const staffRoles = ["admin", "guru", "walas", "guru-mapel", "guru_bk", "guru-bk"]
 
 const defaultQuestions: Record<string, { teks: string; dimensi: string }[]> = {
   "minat-bakat": [
@@ -239,6 +242,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session || !staffRoles.includes(session.role)) {
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Guru/Staff" }, { status: 403 })
+    }
+
     const { jenis, teks, dimensi } = await req.json()
     if (!jenis || !teks) {
       return NextResponse.json({ error: "jenis dan teks diperlukan" }, { status: 400 })
@@ -279,6 +287,11 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session || !staffRoles.includes(session.role)) {
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Guru/Staff" }, { status: 403 })
+    }
+
     const { id, teks, dimensi } = await req.json()
     if (!id) return NextResponse.json({ error: "id diperlukan" }, { status: 400 })
 
@@ -294,6 +307,11 @@ export async function PUT(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
+    const session = await getServerSession()
+    if (!session || !staffRoles.includes(session.role)) {
+      return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Guru/Staff" }, { status: 403 })
+    }
+
     const { id } = await req.json()
     if (!id) return NextResponse.json({ error: "id diperlukan" }, { status: 400 })
     await prisma.soalAsesmen.delete({ where: { id } })
