@@ -9,7 +9,7 @@ import { MobileTopBar } from "@/components/mobile-top-bar"
 import { useAuth } from "@/lib/auth-context"
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
 
@@ -17,10 +17,22 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const canAccessStudentMenu = Boolean(user)
 
   useEffect(() => {
+    if (loading) return
     if (!user && !isCurhatPage) {
       router.replace("/login")
     }
-  }, [isCurhatPage, router, user])
+  }, [isCurhatPage, loading, router, user])
+
+  if (loading && !isCurhatPage) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+          <p className="text-xs font-medium text-slate-500">Memverifikasi...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!user && !isCurhatPage) {
     return null

@@ -30,8 +30,10 @@ export async function middleware(request: NextRequest) {
 
   // 4. Role-based authorization
   const isSuperAdminRoute =
-    pathname.startsWith("/admin/guru") ||
-    pathname.startsWith("/api/admin/guru") ||
+    ((pathname === "/admin/guru" ||
+      pathname.startsWith("/admin/guru/import") ||
+      pathname.startsWith("/api/admin/guru")) &&
+      !pathname.startsWith("/admin/guru/laporan")) ||
     pathname.startsWith("/admin/pengaturan") ||
     pathname.startsWith("/api/admin/reset") ||
     pathname.startsWith("/api/admin/backup") ||
@@ -44,14 +46,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/admin/dashboard", request.url))
   }
 
-  if (isAdminRoute && !["admin", "guru", "walas"].includes(session.role)) {
+  const staffRoles = ["admin", "guru", "walas", "guru-mapel", "guru_bk", "guru-bk"]
+  if (isAdminRoute && !staffRoles.includes(session.role)) {
     if (isApi) {
       return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Staf/Guru" }, { status: 403 })
     }
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
-  if (isGuruRoute && !["admin", "guru", "walas", "guru-mapel"].includes(session.role)) {
+  if (isGuruRoute && !staffRoles.includes(session.role)) {
     if (isApi) {
       return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Guru/Staff" }, { status: 403 })
     }

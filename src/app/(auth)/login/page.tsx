@@ -139,9 +139,11 @@ export default function LoginPage() {
         </Card>
 
         <div className="text-center text-sm text-gray-500 space-y-2">
-          <p className="text-xs text-gray-400">
-            <strong>Siswa</strong>: Login menggunakan NISN (username & password = NISN).<br />
-            <strong>Guru & Admin</strong>: Login menggunakan username yang didaftarkan.
+          <p className="text-xs text-gray-400 leading-relaxed">
+            <strong>Siswa</strong>: NISN atau akun demo <code>siswa</code> (password: <code>siswa123</code>).<br />
+            <strong>Wali Kelas</strong>: username <code>walas</code> (password: <code>walas123</code>).<br />
+            <strong>Guru BK</strong>: username <code>guru</code> atau <code>gurubk</code> (password: <code>guru123</code>).<br />
+            <strong>Guru Mapel</strong>: username <code>gurumapel</code> (password: <code>gurumapel123</code> atau <code>guru123</code>).
           </p>
           <Link href="/register" className="font-semibold text-indigo-600 hover:text-indigo-700 transition">
             Belum punya akun? Daftar sekarang

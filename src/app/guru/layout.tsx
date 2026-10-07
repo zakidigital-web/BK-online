@@ -7,20 +7,30 @@ import { MobileNav } from "@/components/mobile-nav"
 import { useAuth } from "@/lib/auth-context"
 
 export default function GuruLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
+    if (loading) return
     if (!user) {
       router.replace("/login")
       return
     }
     if (user.role === "siswa") {
-      router.replace("/curhat")
+      router.replace("/beranda")
     }
-  }, [user, router])
+  }, [user, loading, router])
 
-  if (!user) return null
+  if (loading || !user) {
+    return (
+      <div className="min-h-dvh flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+          <p className="text-xs font-medium text-gray-500">Memverifikasi sesi guru...</p>
+        </div>
+      </div>
+    )
+  }
   if (user.role === "siswa") return null
 
   return (

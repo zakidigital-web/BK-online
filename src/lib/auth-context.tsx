@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useCallback, ReactNode, useSyncExternalStore } from "react"
+import { createContext, useContext, useCallback, ReactNode, useSyncExternalStore, useState, useEffect } from "react"
 
 export interface User {
   id: string
@@ -73,8 +73,14 @@ function notifyAuthChange() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const [initialized, setInitialized] = useState(false)
   const user = useSyncExternalStore(subscribeAuthStore, parseStoredUser, () => null)
-  const loading = false
+
+  useEffect(() => {
+    setInitialized(true)
+  }, [])
+
+  const loading = !initialized
 
   const login = useCallback(async (username: string, password: string) => {
     const res = await fetch("/api/auth/login", {
