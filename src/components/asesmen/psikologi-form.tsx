@@ -12,6 +12,7 @@ import { useAuth } from "@/lib/auth-context"
 import { questions, hitungSkor, interpretasi } from "@/lib/asesmen/psikologi"
 import { motion, AnimatePresence } from "framer-motion"
 import { AssessmentMascot } from "@/components/asesmen/assessment-mascot"
+import { ThreeMascot3D } from "@/components/asesmen/three-mascot-3d"
 import { Sparkles, ArrowLeft, Check, Heart, Shield, SkipForward, Compass, Star, CheckCircle2, Circle, Clock, UserCircle, Loader2, Send, Clock3, ClipboardList } from "lucide-react"
 
 
@@ -229,11 +230,13 @@ export function PsikologiForm() {
       <div className="space-y-6">
         <Card className="border-0 bg-gradient-to-br from-rose-50 via-orange-50 to-white shadow-md overflow-hidden relative">
           <CardContent className="p-6 text-center flex flex-col items-center">
-            <AssessmentMascot
+            <ThreeMascot3D
               character="mimi"
               mood="cheering"
-              size={110}
-              showSpeechBubble
+              size={140}
+              interactive={true}
+              showParticles={true}
+              showSpeechBubble={true}
               message={`Terima kasih, ${nama || "kamu"}! Selalu sayangi dirimu ya! 💖✨`}
               className="mb-2"
             />
@@ -369,11 +372,13 @@ export function PsikologiForm() {
           <Card className="border-0 bg-gradient-to-br from-rose-500 via-pink-500 to-orange-500 overflow-hidden shadow-lg text-white relative">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
             <CardContent className="p-6 sm:p-8 text-center flex flex-col items-center relative z-10">
-              <AssessmentMascot
+              <ThreeMascot3D
                 character="mimi"
                 mood="calm"
-                size={130}
-                showSpeechBubble
+                size={140}
+                interactive={true}
+                showParticles={true}
+                showSpeechBubble={true}
                 message="Halo! Aku Mimi, ceritakan apa yang kamu rasakan ya~ 🧸💖"
                 className="mb-3"
               />

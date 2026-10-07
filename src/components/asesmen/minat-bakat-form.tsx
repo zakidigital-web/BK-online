@@ -12,6 +12,7 @@ import { useAuth } from "@/lib/auth-context"
 import { questions, hitungSkor, getTipeTeratas, labelDimensi, rekomendasiKarier } from "@/lib/asesmen/minat-bakat"
 import { motion, AnimatePresence } from "framer-motion"
 import { AssessmentMascot } from "@/components/asesmen/assessment-mascot"
+import { ThreeMascot3D } from "@/components/asesmen/three-mascot-3d"
 import {
   ArrowLeft,
   ArrowRight,
@@ -274,7 +275,16 @@ export function MinatBakatForm() {
       <div className="space-y-6">
         <Card className="border-0 bg-gradient-to-br from-emerald-50 via-teal-50 to-white shadow-md overflow-hidden relative">
           <CardContent className="p-6 text-center flex flex-col items-center">
-            <AssessmentMascot mood="cheering" size={110} showSpeechBubble message={`Luar biasa, ${nama || "kamu"}! 🎉`} className="mb-2" />
+            <ThreeMascot3D
+              character="kimi"
+              mood="cheering"
+              size={140}
+              interactive={true}
+              showParticles={true}
+              showSpeechBubble={true}
+              message={`Luar biasa, ${nama || "kamu"}! 🎉`}
+              className="mb-2"
+            />
             <h2 className="text-2xl font-bold text-gray-900 mt-2">Hasil Asesmen Minat Bakat</h2>
             <p className="mt-1 text-emerald-600 font-medium">{nama} · {kelas}</p>
             <Badge className="mt-3 bg-emerald-500 text-white text-sm px-3 py-1 shadow-sm">{getTipeTeratas(hasil)}</Badge>
@@ -394,11 +404,13 @@ export function MinatBakatForm() {
           <Card className="border-0 bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-700 overflow-hidden shadow-lg text-white relative">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
             <CardContent className="p-6 sm:p-8 text-center flex flex-col items-center relative z-10">
-              <AssessmentMascot
+              <ThreeMascot3D
                 character="kimi"
-                mood="excited"
-                size={130}
-                showSpeechBubble
+                mood="happy"
+                size={140}
+                interactive={true}
+                showParticles={true}
+                showSpeechBubble={true}
                 message="Halo! Aku Kimi, yuk cari tahu potensimu! ✨"
                 className="mb-3"
               />

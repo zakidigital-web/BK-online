@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/auth-context"
 import { questions, hitungSkor, getTipeMBTI, getPersentase, labelDimensi, getDeskripsi } from "@/lib/asesmen/mbti"
 import { motion, AnimatePresence } from "framer-motion"
 import { AssessmentMascot } from "@/components/asesmen/assessment-mascot"
+import { ThreeMascot3D } from "@/components/asesmen/three-mascot-3d"
 import {
   ArrowDown, ArrowLeft, Brain, Check, Circle, Clock3, Compass, Frown, Loader2, Meh, Minus, Send, Smile, Sparkles, UserCircle, CheckCircle2, ClipboardList, Star,
 } from "lucide-react"
@@ -223,11 +224,13 @@ export function MbtiForm() {
       <div className="space-y-6">
         <Card className="border-0 bg-gradient-to-br from-indigo-50 via-purple-50 to-white shadow-md overflow-hidden relative">
           <CardContent className="p-6 text-center flex flex-col items-center">
-            <AssessmentMascot
+            <ThreeMascot3D
               character="zen"
               mood="cheering"
-              size={110}
-              showSpeechBubble
+              size={140}
+              interactive={true}
+              showParticles={true}
+              showSpeechBubble={true}
               message={`Analisis selesai, ${nama || "kamu"}! Tipe MBTI-mu adalah ${tipe}! 🤖✨`}
               className="mb-2"
             />
@@ -393,11 +396,13 @@ export function MbtiForm() {
           <Card className="border-0 bg-gradient-to-br from-indigo-500 via-purple-600 to-violet-700 overflow-hidden shadow-lg text-white relative">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
             <CardContent className="p-6 sm:p-8 text-center flex flex-col items-center relative z-10">
-              <AssessmentMascot
+              <ThreeMascot3D
                 character="zen"
-                mood="excited"
-                size={130}
-                showSpeechBubble
+                mood="happy"
+                size={140}
+                interactive={true}
+                showParticles={true}
+                showSpeechBubble={true}
                 message="Halo! Aku Zen, mari analisis kepribadian MBTI-mu! 🤖⚡"
                 className="mb-3"
               />

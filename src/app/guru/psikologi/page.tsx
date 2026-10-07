@@ -27,6 +27,7 @@ import {
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
 import { AssessmentMascot } from "@/components/asesmen/assessment-mascot"
+import { ThreeMascot3D } from "@/components/asesmen/three-mascot-3d"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 
 const skalaIcons = [
@@ -110,11 +111,13 @@ export default function GuruPsikologiPage() {
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="border-0 bg-gradient-to-br from-rose-50 via-pink-50 to-white shadow-md overflow-hidden rounded-3xl">
             <CardContent className="p-6 sm:p-8 text-center flex flex-col items-center">
-              <AssessmentMascot
+              <ThreeMascot3D
                 character="mimi"
                 mood="cheering"
-                size={120}
-                showSpeechBubble
+                size={140}
+                interactive={true}
+                showParticles={true}
+                showSpeechBubble={true}
                 message={`Halo ${user?.name || "Bapak/Ibu"}! Hasil refleksi emosi & kesejahteraan Anda sudah tersimpan! 🌸`}
                 className="mb-3"
               />
@@ -160,11 +163,13 @@ export default function GuruPsikologiPage() {
           <Card className="border-0 bg-gradient-to-br from-rose-500 via-pink-600 to-orange-500 text-white shadow-xl overflow-hidden rounded-3xl relative">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
             <CardContent className="p-6 sm:p-8 text-center flex flex-col items-center relative z-10">
-              <AssessmentMascot
+              <ThreeMascot3D
                 character="mimi"
                 mood="cheering"
-                size={130}
-                showSpeechBubble
+                size={140}
+                interactive={true}
+                showParticles={true}
+                showSpeechBubble={true}
                 message={`Terima kasih, ${user?.name || "Bapak/Ibu"}! Menjaga kebahagiaan hati guru adalah langkah pertama mencerdaskan bangsa! 💖`}
                 className="mb-3"
               />

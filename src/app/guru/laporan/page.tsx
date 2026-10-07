@@ -27,6 +27,7 @@ import { dimensiWarna, getTipeGuruUtama, getStatusPsikologi, dimensiLabels } fro
 import { getTipeMBTI, getPersentase, labelDimensi, getDeskripsi } from "@/lib/asesmen/mbti"
 import { RiasecBarChart } from "@/components/charts"
 import { AssessmentMascot } from "@/components/asesmen/assessment-mascot"
+import { ThreeMascot3D } from "@/components/asesmen/three-mascot-3d"
 import { motion } from "framer-motion"
 
 export default function GuruLaporanPage() {
@@ -75,11 +76,13 @@ export default function GuruLaporanPage() {
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="border-0 bg-gradient-to-br from-indigo-50 via-violet-50 to-white shadow-md overflow-hidden rounded-3xl">
             <CardContent className="p-6 sm:p-8 text-center flex flex-col items-center">
-              <AssessmentMascot
+              <ThreeMascot3D
                 character="kimi"
-                mood="excited"
-                size={130}
-                showSpeechBubble
+                mood="cheering"
+                size={140}
+                interactive={true}
+                showParticles={true}
+                showSpeechBubble={true}
                 message={`Halo ${user?.name || "Bapak/Ibu"}! Mulai kenali potensi dan keunikan mengajar Anda yuk! ✨`}
                 className="mb-3"
               />

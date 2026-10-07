@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth-context"
 import { questions, hitungSkor, getGayaDominan, labelGaya } from "@/lib/asesmen/gaya-belajar"
 import { motion, AnimatePresence } from "framer-motion"
 import { AssessmentMascot } from "@/components/asesmen/assessment-mascot"
+import { ThreeMascot3D } from "@/components/asesmen/three-mascot-3d"
 import { BookOpen, ArrowLeft, Check, Eye, Headphones, FileText, Hand, SkipForward, Compass, Star, CheckCircle2, Circle, Clock, UserCircle, Loader2, Send, Clock3, ClipboardList, Sparkles } from "lucide-react"
 
 
@@ -224,11 +225,13 @@ export function GayaBelajarForm() {
       <div className="space-y-6">
         <Card className="border-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-white shadow-md overflow-hidden relative">
           <CardContent className="p-6 text-center flex flex-col items-center">
-            <AssessmentMascot
+            <ThreeMascot3D
               character="piko"
               mood="cheering"
-              size={110}
-              showSpeechBubble
+              size={140}
+              interactive={true}
+              showParticles={true}
+              showSpeechBubble={true}
               message={`Hebat, ${nama || "kamu"}! Gaya belajarmu ${getGayaDominan(hasil)}! 📚✨`}
               className="mb-2"
             />
@@ -372,11 +375,13 @@ export function GayaBelajarForm() {
           <Card className="border-0 bg-gradient-to-br from-blue-500 via-indigo-600 to-violet-700 overflow-hidden shadow-lg text-white relative">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
             <CardContent className="p-6 sm:p-8 text-center flex flex-col items-center relative z-10">
-              <AssessmentMascot
+              <ThreeMascot3D
                 character="piko"
-                mood="excited"
-                size={130}
-                showSpeechBubble
+                mood="happy"
+                size={140}
+                interactive={true}
+                showParticles={true}
+                showSpeechBubble={true}
                 message="Halo! Aku Piko, yuk cari caramu belajar paling seru! 🐰🎧"
                 className="mb-3"
               />

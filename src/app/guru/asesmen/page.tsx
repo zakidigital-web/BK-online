@@ -31,6 +31,7 @@ import {
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
 import { AssessmentMascot } from "@/components/asesmen/assessment-mascot"
+import { ThreeMascot3D } from "@/components/asesmen/three-mascot-3d"
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 
 const skalaIcons = [
@@ -114,11 +115,13 @@ export default function GuruAsesmenPage() {
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="border-0 bg-gradient-to-br from-indigo-50 via-violet-50 to-white shadow-md overflow-hidden rounded-3xl">
             <CardContent className="p-6 sm:p-8 text-center flex flex-col items-center">
-              <AssessmentMascot
+              <ThreeMascot3D
                 character="kimi"
                 mood="cheering"
-                size={120}
-                showSpeechBubble
+                size={140}
+                interactive={true}
+                showParticles={true}
+                showSpeechBubble={true}
                 message={`Halo ${user?.name || "Bapak/Ibu Guru"}! Hasil asesmen gaya mengajar Anda sudah tersimpan! ✨`}
                 className="mb-3"
               />
@@ -164,11 +167,13 @@ export default function GuruAsesmenPage() {
           <Card className="border-0 bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 text-white shadow-xl overflow-hidden rounded-3xl relative">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
             <CardContent className="p-6 sm:p-8 text-center flex flex-col items-center relative z-10">
-              <AssessmentMascot
+              <ThreeMascot3D
                 character="kimi"
                 mood="cheering"
-                size={130}
-                showSpeechBubble
+                size={140}
+                interactive={true}
+                showParticles={true}
+                showSpeechBubble={true}
                 message={`Luar biasa, ${user?.name || "Bapak/Ibu"}! Profil pedagogik Anda siap diterapkan di kelas! 🎉`}
                 className="mb-3"
               />

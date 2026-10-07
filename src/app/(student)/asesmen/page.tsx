@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { AssessmentMascot, MascotCharacter } from "@/components/asesmen/assessment-mascot"
+import { ThreeMascot3D } from "@/components/asesmen/three-mascot-3d"
 import { useAuth } from "@/lib/auth-context"
 import {
   Brain,
@@ -166,15 +167,17 @@ export default function AsesmenHubPage() {
               </div>
             </div>
 
-            {/* Spotlight Interactive Mascot Showcase */}
+            {/* Spotlight Interactive 3D Mascot Showcase */}
             <div className="flex flex-col items-center justify-center">
               <div className="relative p-2">
-                <AssessmentMascot
+                <ThreeMascot3D
                   key={currentHero.character}
                   character={currentHero.character}
-                  mood="excited"
-                  size={140}
-                  showSpeechBubble
+                  mood="cheering"
+                  size={150}
+                  interactive={true}
+                  showParticles={true}
+                  showSpeechBubble={true}
                   message={`Halo! Aku ${currentHero.characterName}, ${currentHero.characterRole.toLowerCase()}! ✨`}
                 />
               </div>
