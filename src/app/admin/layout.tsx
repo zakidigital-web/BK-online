@@ -18,7 +18,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       return
     }
     if (user.role === "siswa") {
-      router.replace("/curhat")
+      router.replace("/beranda")
     }
   }, [user, router])
 

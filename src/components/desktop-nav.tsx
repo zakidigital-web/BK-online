@@ -8,58 +8,61 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/lib/auth-context"
 
 const studentItems = [
+  { href: "/beranda", icon: Home, label: "Beranda Siswa" },
   { href: "/asesmen", icon: Compass, label: "Pusat Asesmen" },
   { href: "/curhat", icon: MessageCircleHeart, label: "Curhat Anonim" },
   { href: "/asesmen/minat-bakat", icon: Brain, label: "Minat Bakat" },
   { href: "/asesmen/psikologi", icon: Sparkles, label: "Psikologi" },
-  { href: "/asesmen/gaya-belajar", icon: Home, label: "Gaya Belajar" },
+  { href: "/asesmen/gaya-belajar", icon: BookOpen, label: "Gaya Belajar" },
   { href: "/karakter", icon: UserCircle, label: "Karakter Diri" },
-  { href: "/asesmen/mbti", icon: Brain, label: "MBTI (Opsional)" },
+  { href: "/asesmen/mbti", icon: Brain, label: "MBTI" },
 ]
 
 const adminFullItems = [
-  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/asesmen", icon: Compass, label: "Pusat Asesmen" },
-  { href: "/admin/curhat", icon: MessageCircleHeart, label: "Kelola Curhat" },
-  { href: "/admin/laporan", icon: FileText, label: "Laporan" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Beranda Admin" },
   { href: "/admin/siswa", icon: Users, label: "Data Siswa" },
   { href: "/admin/guru", icon: GraduationCap, label: "Akun Guru" },
-  { href: "/admin/pertanyaan", icon: HelpCircle, label: "Pertanyaan" },
-  { href: "/admin/retake", icon: RotateCcw, label: "Retake" },
-  { href: "/admin/analisa", icon: BarChart3, label: "Analisa" },
-  { href: "/admin/guru/laporan", icon: FileText, label: "Laporan Guru" },
-  { href: "/admin/banner", icon: LayoutDashboard, label: "Banner" },
-  { href: "/admin/pengaturan", icon: Settings, label: "Pengaturan" },
+  { href: "/admin/curhat", icon: MessageCircleHeart, label: "Kelola Curhat" },
+  { href: "/admin/laporan", icon: FileText, label: "Laporan Siswa" },
+  { href: "/admin/retake", icon: RotateCcw, label: "Persetujuan Retake" },
+  { href: "/admin/pertanyaan", icon: HelpCircle, label: "Bank Soal" },
+  { href: "/admin/banner", icon: LayoutDashboard, label: "Banner Pengumuman" },
+  { href: "/admin/analisa", icon: BarChart3, label: "Analisa Menyeluruh" },
+  { href: "/admin/guru/laporan", icon: FileText, label: "Laporan Asesmen Guru" },
+  { href: "/admin/pengaturan", icon: Settings, label: "Pengaturan Sistem" },
 ]
 
 const guruBKItems = [
-  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/asesmen", icon: Compass, label: "Pusat Asesmen" },
-  { href: "/admin/curhat", icon: MessageCircleHeart, label: "Kelola Curhat" },
-  { href: "/admin/laporan", icon: FileText, label: "Laporan" },
-  { href: "/admin/siswa", icon: Users, label: "Data Siswa" },
-  { href: "/admin/retake", icon: RotateCcw, label: "Retake" },
-  { href: "/admin/analisa", icon: BarChart3, label: "Analisa" },
-  { href: "/guru/asesmen", icon: ClipboardList, label: "Gaya Mengajar" },
-  { href: "/guru/psikologi", icon: BookOpen, label: "Psikologi Guru" },
-  { href: "/guru/mbti", icon: Brain, label: "MBTI (Opsional)" },
-  { href: "/admin/guru/laporan", icon: FileText, label: "Laporan Guru" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Beranda Guru BK" },
+  { href: "/admin/curhat", icon: MessageCircleHeart, label: "Ruang Curhat Siswa" },
+  { href: "/admin/laporan", icon: FileText, label: "Laporan Asesmen Siswa" },
+  { href: "/admin/siswa", icon: Users, label: "Database Siswa" },
+  { href: "/admin/retake", icon: RotateCcw, label: "Verifikasi Retake" },
+  { href: "/admin/analisa", icon: BarChart3, label: "Analisis Psikologi" },
+  { href: "/asesmen", icon: Compass, label: "Pusat Asesmen Siswa" },
+  { href: "/guru/asesmen", icon: ClipboardList, label: "Asesmen Gaya Mengajar" },
+  { href: "/guru/psikologi", icon: BookOpen, label: "Psikologi Pendidik" },
+  { href: "/guru/mbti", icon: Brain, label: "MBTI Guru" },
+  { href: "/admin/guru/laporan", icon: FileText, label: "Portofolio Guru" },
 ]
 
 const walasItems = [
-  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Beranda Wali Kelas" },
+  { href: "/admin/laporan", icon: FileText, label: "Laporan Kelas Binaan" },
+  { href: "/admin/siswa", icon: Users, label: "Daftar Siswa Kelas" },
+  { href: "/admin/analisa", icon: BarChart3, label: "Analisis Gaya & Minat" },
   { href: "/asesmen", icon: Compass, label: "Pusat Asesmen" },
-  { href: "/admin/laporan", icon: FileText, label: "Laporan" },
-  { href: "/admin/siswa", icon: Users, label: "Data Siswa" },
-  { href: "/admin/analisa", icon: BarChart3, label: "Analisa" },
+  { href: "/guru/asesmen", icon: ClipboardList, label: "Asesmen Gaya Mengajar" },
 ]
 
 const guruMapelItems = [
-  { href: "/asesmen", icon: Compass, label: "Pusat Asesmen" },
-  { href: "/guru/asesmen", icon: ClipboardList, label: "Gaya Mengajar" },
-  { href: "/guru/psikologi", icon: BookOpen, label: "Psikologi Guru" },
-  { href: "/guru/mbti", icon: Brain, label: "MBTI (Opsional)" },
-  { href: "/guru/laporan", icon: FileText, label: "Laporan Saya" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Beranda Guru Mapel" },
+  { href: "/admin/laporan", icon: FileText, label: "Gaya Belajar Murid" },
+  { href: "/guru/asesmen", icon: ClipboardList, label: "Gaya Mengajar Saya" },
+  { href: "/guru/psikologi", icon: BookOpen, label: "Psikologi Pendidik" },
+  { href: "/guru/mbti", icon: Brain, label: "MBTI Guru" },
+  { href: "/guru/laporan", icon: FileText, label: "Portofolio Hasil Saya" },
+  { href: "/asesmen", icon: Compass, label: "Pusat Asesmen Siswa" },
 ]
 
 export function DesktopNav({

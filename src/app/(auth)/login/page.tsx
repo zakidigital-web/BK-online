@@ -44,9 +44,7 @@ export default function LoginPage() {
       const user = await login(form.username, form.password)
       toast.success("Berhasil masuk!")
       if (user.role === "siswa") {
-        router.push("/curhat")
-      } else if (user.role === "guru-mapel") {
-        router.push("/guru/laporan")
+        router.push("/beranda")
       } else {
         router.push("/admin/dashboard")
       }

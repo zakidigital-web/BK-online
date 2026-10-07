@@ -34,6 +34,7 @@ interface NavItem {
 }
 
 const studentItems: NavItem[] = [
+  { href: "/beranda", icon: Home, label: "Beranda" },
   { href: "/asesmen", icon: Compass, label: "Asesmen" },
   { href: "/curhat", icon: MessageCircleHeart, label: "Curhat" },
   { href: "/karakter", icon: UserCircle, label: "Karakter" },
@@ -44,27 +45,26 @@ const studentItems: NavItem[] = [
 ]
 
 const adminItems: NavItem[] = [
-  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/asesmen", icon: Compass, label: "Asesmen" },
-  { href: "/admin/curhat", icon: MessageCircleHeart, label: "Curhat" },
-  { href: "/admin/laporan", icon: FileText, label: "Laporan" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Beranda" },
   { href: "/admin/siswa", icon: Users, label: "Siswa" },
   { href: "/admin/guru", icon: GraduationCap, label: "Guru" },
-  { href: "/admin/pertanyaan", icon: HelpCircle, label: "Soal" },
+  { href: "/admin/curhat", icon: MessageCircleHeart, label: "Curhat" },
+  { href: "/admin/laporan", icon: FileText, label: "Laporan" },
   { href: "/admin/retake", icon: RotateCcw, label: "Retake" },
+  { href: "/admin/pertanyaan", icon: HelpCircle, label: "Soal" },
+  { href: "/admin/banner", icon: LayoutDashboard, label: "Banner" },
   { href: "/admin/analisa", icon: BarChart3, label: "Analisa" },
   { href: "/admin/guru/laporan", icon: FileText, label: "Lap.Guru" },
-  { href: "/admin/banner", icon: LayoutDashboard, label: "Banner" },
   { href: "/admin/pengaturan", icon: Settings, label: "Atur" },
 ]
 
 const guruBKItems: NavItem[] = [
-  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/asesmen", icon: Compass, label: "Asesmen" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Beranda" },
   { href: "/admin/curhat", icon: MessageCircleHeart, label: "Curhat" },
-  { href: "/admin/siswa", icon: Users, label: "Siswa" },
   { href: "/admin/laporan", icon: FileText, label: "Laporan" },
+  { href: "/admin/siswa", icon: Users, label: "Siswa" },
   { href: "/admin/retake", icon: RotateCcw, label: "Retake" },
+  { href: "/asesmen", icon: Compass, label: "Asesmen" },
   { href: "/admin/analisa", icon: BarChart3, label: "Analisa" },
   { href: "/guru/asesmen", icon: ClipboardList, label: "Mengajar" },
   { href: "/guru/psikologi", icon: BookOpen, label: "Psikologi" },
@@ -73,19 +73,22 @@ const guruBKItems: NavItem[] = [
 ]
 
 const walasItems: NavItem[] = [
-  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/asesmen", icon: Compass, label: "Asesmen" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Beranda" },
   { href: "/admin/laporan", icon: FileText, label: "Laporan" },
   { href: "/admin/siswa", icon: Users, label: "Siswa" },
   { href: "/admin/analisa", icon: BarChart3, label: "Analisa" },
+  { href: "/asesmen", icon: Compass, label: "Asesmen" },
+  { href: "/guru/asesmen", icon: ClipboardList, label: "Mengajar" },
 ]
 
 const guruMapelItems: NavItem[] = [
-  { href: "/asesmen", icon: Compass, label: "Asesmen" },
+  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Beranda" },
+  { href: "/admin/laporan", icon: FileText, label: "Murid" },
   { href: "/guru/asesmen", icon: ClipboardList, label: "Mengajar" },
   { href: "/guru/psikologi", icon: BookOpen, label: "Psikologi" },
   { href: "/guru/mbti", icon: Brain, label: "MBTI" },
   { href: "/guru/laporan", icon: FileText, label: "Laporan" },
+  { href: "/asesmen", icon: Compass, label: "Asesmen" },
 ]
 
 const MAX_VISIBLE = 5

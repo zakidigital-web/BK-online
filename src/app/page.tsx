@@ -75,14 +75,23 @@ export default function HomePage() {
           </Link>
           <nav className={`hidden md:flex items-center gap-6 text-sm font-medium transition-colors ${scrolled ? "text-gray-600" : "text-white/80"}`}>
             <Link href="/curhat" className="hover:text-primary transition-colors">Curhat</Link>
-            <button onClick={() => router.push(user ? "/asesmen/minat-bakat" : "/login")} className="hover:text-primary transition-colors">Asesmen</button>
-            <Link href="/login" className="hover:text-primary transition-colors">Masuk</Link>
-            <Link href="/register">
-              <Button size="sm" className="bg-primary hover:bg-primary/90 rounded-xl shadow-sm text-primary-foreground">
-                Daftar
-              </Button>
-            </Link>
-
+            <Link href="/asesmen" className="hover:text-primary transition-colors">Asesmen</Link>
+            {user ? (
+              <Link href={user.role === "siswa" ? "/beranda" : "/admin/dashboard"}>
+                <Button size="sm" className="bg-primary hover:bg-primary/90 rounded-xl shadow-sm text-primary-foreground font-semibold">
+                  Buka Beranda ({user.name.split(" ")[0]})
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="hover:text-primary transition-colors">Masuk</Link>
+                <Link href="/register">
+                  <Button size="sm" className="bg-primary hover:bg-primary/90 rounded-xl shadow-sm text-primary-foreground">
+                    Daftar
+                  </Button>
+                </Link>
+              </>
+            )}
           </nav>
           <div className="flex items-center gap-2 md:hidden">
             <button className={`p-2 rounded-lg transition-colors ${scrolled ? "hover:bg-slate-100" : "hover:bg-white/10"}`} onClick={() => setMenuOpen(!menuOpen)}>
@@ -99,12 +108,23 @@ export default function HomePage() {
               className={`md:hidden overflow-hidden ${scrolled ? "border-t border-slate-100" : ""}`}
             >
               <div className={`px-4 py-4 space-y-2 ${scrolled ? "bg-white" : "bg-slate-900"}`}>
-                <Link href="/curhat" className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${scrolled ? "text-gray-600 hover:bg-primary/5 hover:text-primary" : "text-white/70 hover:bg-white/10 hover:text-white"}`} onClick={() => setMenuOpen(false)}>Curhat Anonim</Link>
-                <button onClick={() => { router.push(user ? "/asesmen/minat-bakat" : "/login"); setMenuOpen(false) }} className={`block w-full text-left rounded-lg px-3 py-2 text-sm font-medium transition-colors ${scrolled ? "text-gray-600 hover:bg-primary/5 hover:text-primary" : "text-white/70 hover:bg-white/10 hover:text-white"}`}>Asesmen Siswa</button>
-                <Link href="/login" className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${scrolled ? "text-gray-600 hover:bg-primary/5 hover:text-primary" : "text-white/70 hover:bg-white/10 hover:text-white"}`} onClick={() => setMenuOpen(false)}>Masuk</Link>
-                <Link href="/register" onClick={() => setMenuOpen(false)} className="block pt-1">
-                  <Button size="sm" className="w-full bg-primary hover:bg-primary/90">Daftar Akun</Button>
-                </Link>
+                {user && (
+                  <Link href={user.role === "siswa" ? "/beranda" : "/admin/dashboard"} onClick={() => setMenuOpen(false)} className="block pb-1">
+                    <Button size="sm" className="w-full bg-primary hover:bg-primary/90 font-bold">
+                      Buka Beranda ({user.name.split(" ")[0]})
+                    </Button>
+                  </Link>
+                )}
+                <Link href="/curhat" className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${scrolled ? "text-gray-600 hover:bg-primary/5 hover:text-primary" : "text-white/70 hover:bg-white/10 hover:text-white"}`} onClick={() => setMenuOpen(false)}>Curhat</Link>
+                <Link href="/asesmen" className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${scrolled ? "text-gray-600 hover:bg-primary/5 hover:text-primary" : "text-white/70 hover:bg-white/10 hover:text-white"}`} onClick={() => setMenuOpen(false)}>Pusat Asesmen</Link>
+                {!user && (
+                  <>
+                    <Link href="/login" className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${scrolled ? "text-gray-600 hover:bg-primary/5 hover:text-primary" : "text-white/70 hover:bg-white/10 hover:text-white"}`} onClick={() => setMenuOpen(false)}>Masuk</Link>
+                    <Link href="/register" onClick={() => setMenuOpen(false)} className="block pt-1">
+                      <Button size="sm" className="w-full bg-primary hover:bg-primary/90">Daftar Akun</Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </motion.div>
           )}
