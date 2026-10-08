@@ -23,27 +23,34 @@ model User {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  chatMessages ChatMessage[]
-  guruAsesmen  GuruAsesmen?
+  chatMessages  ChatMessage[]
+  assignedChats ChatMessage[] @relation("TargetGuruChats")
+  guruAsesmen   GuruAsesmen?
 
   @@index([role])
 }
 
 model ChatMessage {
-  id          String        @id @default(cuid())
-  anonymousId String
-  message     String
-  senderRole  String        @default("siswa")
-  userId      String?
-  user        User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
-  replyToId   String?
-  replyTo     ChatMessage?  @relation("ChatReplies", fields: [replyToId], references: [id], onDelete: Cascade)
-  replies     ChatMessage[] @relation("ChatReplies")
-  createdAt   DateTime      @default(now())
+  id           String        @id @default(cuid())
+  anonymousId  String
+  message      String
+  senderRole   String        @default("siswa")
+  userId       String?
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  targetGuruId String?
+  targetGuru   User?         @relation("TargetGuruChats", fields: [targetGuruId], references: [id], onDelete: SetNull)
+  isAnonymous  Boolean       @default(true)
+  senderName   String?
+  senderKelas  String?
+  replyToId    String?
+  replyTo      ChatMessage?  @relation("ChatReplies", fields: [replyToId], references: [id], onDelete: Cascade)
+  replies      ChatMessage[] @relation("ChatReplies")
+  createdAt    DateTime      @default(now())
 
   @@index([anonymousId, createdAt])
   @@index([createdAt])
   @@index([userId])
+  @@index([targetGuruId])
 }
 
 model Siswa {
