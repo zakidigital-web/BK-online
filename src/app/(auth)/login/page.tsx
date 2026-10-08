@@ -31,10 +31,10 @@ export default function LoginPage() {
 
   const roleAccounts = [
     { role: "Admin", icon: ShieldCheck, username: "admin", password: "admin123", color: "purple" },
-    { role: "Guru BK", icon: GraduationCap, username: "guru", password: "guru123", color: "blue" },
-    { role: "Guru Mapel", icon: BookOpen, username: "gurumapel", password: "guru123", color: "teal" },
-    { role: "Wali Kelas", icon: Users, username: "walas", password: "walas123", color: "amber" },
-    { role: "Siswa", icon: GraduationCap, username: "siswa", password: "siswa123", color: "emerald" },
+    { role: "Guru", icon: GraduationCap, username: "19700817", password: "guru123", color: "blue" },
+    { role: "Walas 7A", icon: Users, username: "walas7a", password: "walas123", color: "amber" },
+    { role: "Walas 8A", icon: Users, username: "walas8a", password: "walas123", color: "amber" },
+    { role: "Siswa (Contoh)", icon: GraduationCap, username: "0127470516", password: "0127470516", color: "emerald" },
   ]
 
   async function handleSubmit(e: React.FormEvent) {
