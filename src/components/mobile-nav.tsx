@@ -8,6 +8,7 @@ import {
   Users,
   Settings,
   LogOut,
+  LogIn,
   GraduationCap,
   ClipboardList,
   BookOpen,
@@ -150,7 +151,7 @@ export function MobileNav({
 
   const items =
     !authenticated && role === "siswa"
-      ? studentItems.filter((item) => item.href === "/curhat")
+      ? studentItems.filter((item) => item.href !== "/beranda")
       : allItems
 
   const primary = items.length <= MAX_VISIBLE ? items : items.slice(0, MAX_VISIBLE - 1)
@@ -219,40 +220,66 @@ export function MobileNav({
                   )
                 })}
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    logout()
-                    router.push("/login")
-                    setSheetOpen(false)
-                  }}
-                  className="flex flex-col items-center gap-1.5 rounded-2xl p-3 text-[11px] font-semibold text-rose-600 bg-rose-50/70 hover:bg-rose-100 transition-all tap-bounce"
-                >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-rose-600 border border-rose-200/60">
-                    <LogOut className="h-5 w-5" />
-                  </div>
-                  <span className="text-center leading-tight">Keluar</span>
-                </button>
+                {authUser ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logout()
+                      router.push("/login")
+                      setSheetOpen(false)
+                    }}
+                    className="flex flex-col items-center gap-1.5 rounded-2xl p-3 text-[11px] font-semibold text-rose-600 bg-rose-50/70 hover:bg-rose-100 transition-all tap-bounce"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-rose-600 border border-rose-200/60">
+                      <LogOut className="h-5 w-5" />
+                    </div>
+                    <span className="text-center leading-tight">Keluar</span>
+                  </button>
+                ) : (
+                  <Link
+                    href="/login"
+                    onClick={() => setSheetOpen(false)}
+                    className="flex flex-col items-center gap-1.5 rounded-2xl p-3 text-[11px] font-semibold text-indigo-600 bg-indigo-50/70 hover:bg-indigo-100 transition-all tap-bounce"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-indigo-600 border border-indigo-200/60">
+                      <LogIn className="h-5 w-5" />
+                    </div>
+                    <span className="text-center leading-tight">Masuk</span>
+                  </Link>
+                )}
               </div>
             </SheetContent>
           </Sheet>
         )}
 
         {overflow.length === 0 && (
-          <button
-            type="button"
-            onClick={() => {
-              logout()
-              router.push("/login")
-            }}
-            className="flex flex-col items-center justify-center gap-0.5 rounded-2xl py-1.5 px-2 text-[10px] font-medium text-slate-400 hover:text-rose-500 transition-all tap-bounce min-w-0 flex-1"
-            title="Keluar"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl">
-              <LogOut className="h-4 w-4" />
-            </div>
-            <span className="truncate leading-tight">Keluar</span>
-          </button>
+          authUser ? (
+            <button
+              type="button"
+              onClick={() => {
+                logout()
+                router.push("/login")
+              }}
+              className="flex flex-col items-center justify-center gap-0.5 rounded-2xl py-1.5 px-2 text-[10px] font-medium text-slate-400 hover:text-rose-500 transition-all tap-bounce min-w-0 flex-1"
+              title="Keluar"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl">
+                <LogOut className="h-4 w-4" />
+              </div>
+              <span className="truncate leading-tight">Keluar</span>
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="flex flex-col items-center justify-center gap-0.5 rounded-2xl py-1.5 px-2 text-[10px] font-medium text-indigo-600 hover:text-indigo-700 transition-all tap-bounce min-w-0 flex-1"
+              title="Masuk"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl">
+                <LogIn className="h-4 w-4" />
+              </div>
+              <span className="truncate leading-tight">Masuk</span>
+            </Link>
+          )
         )}
       </div>
     </nav>

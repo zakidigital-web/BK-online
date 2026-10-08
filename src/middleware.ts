@@ -39,18 +39,14 @@ export async function middleware(request: NextRequest) {
     return applySecurityHeaders(NextResponse.next())
   }
 
-  // 2. Student assessment routes: strictly for siswa role!
-  const isStudentAssessmentRoute =
-    pathname === "/asesmen" ||
-    pathname.startsWith("/asesmen/") ||
-    pathname === "/karakter" ||
-    pathname === "/beranda"
+  // 2. Beranda siswa (memerlukan login siswa)
+  const isBerandaRoute = pathname === "/beranda"
 
   // 3. Admin / Guru routes
   const isAdminRoute = pathname.startsWith("/admin") || pathname.startsWith("/api/admin")
   const isGuruRoute = pathname.startsWith("/guru") || pathname.startsWith("/api/guru")
 
-  if (!isStudentAssessmentRoute && !isAdminRoute && !isGuruRoute) {
+  if (!isBerandaRoute && !isAdminRoute && !isGuruRoute) {
     return applySecurityHeaders(NextResponse.next())
   }
 
@@ -58,14 +54,14 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get("bk_session")?.value
   const session = sessionCookie ? await verifySessionToken(sessionCookie) : null
 
-  // 5. Handle student assessment route access
-  if (isStudentAssessmentRoute) {
+  // 5. Handle beranda route access
+  if (isBerandaRoute) {
     if (!session) {
       const loginUrl = new URL("/login", request.url)
       loginUrl.searchParams.set("callbackUrl", pathname)
       return applySecurityHeaders(NextResponse.redirect(loginUrl))
     }
-    // Teachers / staff / admin are strictly forbidden from student assessment center
+    // Teachers / staff / admin diarahkan ke dashboard admin
     if (session.role !== "siswa") {
       return applySecurityHeaders(NextResponse.redirect(new URL("/admin/dashboard", request.url)))
     }
@@ -130,9 +126,6 @@ export const config = {
     "/api/admin/:path*",
     "/api/guru/:path*",
     "/api/auth/login",
-    "/asesmen/:path*",
-    "/asesmen",
-    "/karakter",
     "/beranda",
   ],
 }

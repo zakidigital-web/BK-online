@@ -14,21 +14,23 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const router = useRouter()
 
   const isCurhatPage = pathname === "/curhat"
+  const isAssessmentPage = pathname === "/asesmen" || pathname.startsWith("/asesmen/") || pathname === "/karakter"
   const canAccessStudentMenu = Boolean(user)
 
   useEffect(() => {
     if (loading) return
-    if (!user && !isCurhatPage) {
+    // Halaman asesmen dan curhat terbuka untuk diisi oleh siswa / dicoba guru
+    if (!user && !isCurhatPage && !isAssessmentPage) {
       router.replace("/login")
       return
     }
-    // Teachers, staff, and admin are not allowed in student assessment center / beranda
-    if (user && user.role !== "siswa" && !isCurhatPage) {
+    // Jika guru/admin mengakses /beranda, arahkan ke dashboard admin
+    if (user && user.role !== "siswa" && pathname === "/beranda") {
       router.replace("/admin/dashboard")
     }
-  }, [isCurhatPage, loading, router, user])
+  }, [isCurhatPage, isAssessmentPage, loading, router, user, pathname])
 
-  if (loading && !isCurhatPage) {
+  if (loading && !isCurhatPage && !isAssessmentPage) {
     return (
       <div className="min-h-dvh flex items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-3">
@@ -39,7 +41,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     )
   }
 
-  if ((!user || user.role !== "siswa") && !isCurhatPage) {
+  if (!user && !isCurhatPage && !isAssessmentPage) {
     return null
   }
 

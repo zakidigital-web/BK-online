@@ -11,6 +11,7 @@ import { questions, hitungSkor, getTipeMBTI, getPersentase, labelDimensi, getDes
 import { motion, AnimatePresence } from "framer-motion"
 import { AssessmentMascot } from "@/components/asesmen/assessment-mascot"
 import { ThreeMascot3D } from "@/components/asesmen/three-mascot-3d"
+import { PesertaCard } from "@/components/asesmen/peserta-card"
 import {
   ArrowDown, ArrowLeft, Brain, Check, Circle, Clock3, Compass, Frown, Loader2, Meh, Minus, Send, Smile, Sparkles, UserCircle, CheckCircle2, ClipboardList, Star,
 } from "lucide-react"
@@ -426,47 +427,29 @@ export function MbtiForm() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-sm bg-white/90 backdrop-blur-sm rounded-2xl">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base sm:text-lg flex items-center gap-2 text-slate-800">
-                <UserCircle className="h-5 w-5 text-indigo-600" />
-                Data Peserta
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-500 font-medium">Nama Lengkap</Label>
-                  <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 text-sm font-semibold text-slate-800">
-                    {nama || "Mengambil data..."}
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-500 font-medium">
-                    {user?.role !== "siswa" ? "Peran / Posisi" : "Kelas"}
-                  </Label>
-                  <div className="flex h-11 items-center rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 text-sm font-semibold text-slate-800">
-                    {kelas || (loadingSiswa ? "Memuat..." : user?.role !== "siswa" ? "Guru / Staff" : "Kelas belum diatur, hubungi Guru BK")}
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-indigo-50/80 p-3.5 text-xs text-indigo-800 border border-indigo-100 flex items-start gap-2.5">
+          <PesertaCard
+            nama={nama}
+            setNama={setNama}
+            kelas={kelas}
+            setKelas={setKelas}
+            user={user}
+            loadingSiswa={loadingSiswa}
+            colorTheme="indigo"
+            buttonLabel="Mulai Bersama Zen"
+            buttonIcon={<Brain className="h-4 w-4" />}
+            tipsText={
+              <>
                 <Sparkles className="h-4 w-4 text-indigo-600 shrink-0 mt-0.5" />
                 <span>
                   <strong>Tips dari Zen:</strong> Jangan terlalu lama berpikir pada satu pertanyaan. Jawaban pertama yang melintas biasanya adalah preferensi alamimu!
                 </span>
-              </div>
-
-              <Button
-                className="w-full h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-md gap-2 transition-all hover:scale-[1.01]"
-                onClick={() => { setShowIntro(false); setMode("kuesioner") }}
-                disabled={!nama || !kelas || loadingSiswa}
-              >
-                {loadingSiswa ? "Memuat..." : "Mulai Bersama Zen"} <Brain className="h-4 w-4" />
-              </Button>
-            </CardContent>
-          </Card>
+              </>
+            }
+            onStart={() => {
+              setShowIntro(false)
+              setMode("kuesioner")
+            }}
+          />
         </motion.div>
       </div>
     )

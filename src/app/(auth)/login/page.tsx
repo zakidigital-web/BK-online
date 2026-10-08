@@ -8,15 +8,18 @@ import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
 import { Eye, EyeOff, LogIn, KeyRound, GraduationCap, ShieldCheck, Users, Info, HelpCircle } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
+import { Suspense } from "react"
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback
 }
 
-export default function LoginPage() {
+function LoginFormContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get("callbackUrl")
   const { login } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -72,7 +75,7 @@ export default function LoginPage() {
       const user = await login(form.username, form.password)
       toast.success("Berhasil masuk!")
       if (user.role === "siswa") {
-        router.push("/beranda")
+        router.push(callbackUrl || "/beranda")
       } else {
         router.push("/admin/dashboard")
       }
@@ -217,5 +220,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-dvh flex items-center justify-center bg-slate-50">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+        </div>
+      }
+    >
+      <LoginFormContent />
+    </Suspense>
   )
 }

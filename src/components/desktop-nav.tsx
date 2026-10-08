@@ -1,6 +1,6 @@
 "use client"
 
-import { MessageCircleHeart, Brain, Sparkles, UserCircle, Home, LayoutDashboard, FileText, Users, Settings, BarChart3, LogOut, GraduationCap, ClipboardList, BookOpen, HelpCircle, RotateCcw, Compass } from "lucide-react"
+import { MessageCircleHeart, Brain, Sparkles, UserCircle, Home, LayoutDashboard, FileText, Users, Settings, BarChart3, LogOut, LogIn, GraduationCap, ClipboardList, BookOpen, HelpCircle, RotateCcw, Compass } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
@@ -78,7 +78,7 @@ export function DesktopNav({
     : role === "guru" ? guruBKItems
     : adminFullItems
   const visibleItems = !authenticated && role === "siswa"
-    ? studentItems.filter((item) => item.href === "/curhat")
+    ? studentItems.filter((item) => item.href !== "/beranda")
     : items
 
   return (
@@ -149,14 +149,25 @@ export function DesktopNav({
             </div>
           ) : null
         })()}
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full gap-2 text-gray-500"
-          onClick={() => { logout(); router.push("/login") }}
-        >
-          <LogOut className="h-4 w-4" /> Keluar
-        </Button>
+        {authUser ? (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full gap-2 text-gray-500 hover:text-rose-600 hover:bg-rose-50"
+            onClick={() => { logout(); router.push("/login") }}
+          >
+            <LogOut className="h-4 w-4" /> Keluar
+          </Button>
+        ) : (
+          <Link href="/login" className="block">
+            <Button
+              size="sm"
+              className="w-full gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+            >
+              <LogIn className="h-4 w-4" /> Masuk Akun
+            </Button>
+          </Link>
+        )}
       </div>
     </aside>
   )
