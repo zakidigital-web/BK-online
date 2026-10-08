@@ -50,6 +50,42 @@ export async function POST(req: Request) {
   }
 }
 
+export async function PUT(req: Request) {
+  try {
+    const { id, name, role, kelas, mapel, nipy } = await req.json()
+    if (!id) {
+      return NextResponse.json({ error: "ID guru diperlukan" }, { status: 400 })
+    }
+
+    const existing = await prisma.user.findUnique({ where: { id } })
+    if (!existing) {
+      return NextResponse.json({ error: "Akun tidak ditemukan" }, { status: 404 })
+    }
+
+    const validRoles = ["admin", "guru", "guru-mapel", "walas"]
+    if (role && !validRoles.includes(role)) {
+      return NextResponse.json({ error: "Role tidak valid" }, { status: 400 })
+    }
+
+    const updated = await prisma.user.update({
+      where: { id },
+      data: {
+        name: name !== undefined ? String(name).trim() : undefined,
+        role: role !== undefined ? role : undefined,
+        kelas: kelas !== undefined ? (kelas ? String(kelas).trim().toUpperCase() : null) : undefined,
+        mapel: mapel !== undefined ? (mapel ? String(mapel).trim() : null) : undefined,
+        nipy: nipy !== undefined ? (nipy ? String(nipy).trim() : null) : undefined,
+      },
+      select: { id: true, name: true, email: true, role: true, nipy: true, kelas: true, mapel: true, createdAt: true },
+    })
+
+    return NextResponse.json({ guru: updated })
+  } catch (error: any) {
+    console.error("[UPDATE_GURU_ERROR]:", error)
+    return NextResponse.json({ error: "Gagal memperbarui data akun guru" }, { status: 500 })
+  }
+}
+
 export async function DELETE(req: Request) {
   try {
     const { id } = await req.json()
