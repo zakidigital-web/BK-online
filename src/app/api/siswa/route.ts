@@ -80,9 +80,50 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Guru/Staff" }, { status: 403 })
     }
 
-    const { id, nama, kelas, nisn } = await req.json()
+    const body = await req.json()
+    const { id, ids, nama, kelas, targetKelas, nisn } = body
+
+    // Batch transfer siswa antar kelas
+    if (Array.isArray(ids) && ids.length > 0) {
+      const destClass = String(targetKelas || kelas || "").trim().toUpperCase()
+      if (!destClass) {
+        return NextResponse.json({ error: "Kelas tujuan harus ditentukan" }, { status: 400 })
+      }
+
+      await prisma.kelas.upsert({
+        where: { nama: destClass },
+        update: {},
+        create: { nama: destClass },
+      })
+
+      // Cari siswa untuk dapat NISN sinkronisasi User
+      const targetSiswaList = await prisma.siswa.findMany({
+        where: { id: { in: ids } },
+        select: { nisn: true }
+      })
+
+      const nisnList = targetSiswaList
+        .map(s => s.nisn)
+        .filter((n): n is string => Boolean(n))
+
+      const [updatedSiswa] = await prisma.$transaction([
+        prisma.siswa.updateMany({
+          where: { id: { in: ids } },
+          data: { kelas: destClass }
+        }),
+        ...(nisnList.length > 0 ? [
+          prisma.user.updateMany({
+            where: { email: { in: nisnList }, role: "siswa" },
+            data: { kelas: destClass }
+          })
+        ] : [])
+      ])
+
+      return NextResponse.json({ success: true, count: updatedSiswa.count, targetKelas: destClass })
+    }
+
     if (!id) {
-      return NextResponse.json({ error: "ID siswa diperlukan" }, { status: 400 })
+      return NextResponse.json({ error: "ID siswa atau daftar IDs diperlukan" }, { status: 400 })
     }
     const data: { nama?: string; kelas?: string; nisn?: string | null } = {}
     if (nama) data.nama = String(nama).trim()
@@ -110,8 +151,16 @@ export async function PUT(req: Request) {
       siswa.nama
     )
 
+    if (data.kelas && siswa.nisn) {
+      await prisma.user.updateMany({
+        where: { email: siswa.nisn, role: "siswa" },
+        data: { kelas: data.kelas }
+      })
+    }
+
     return NextResponse.json({ siswa })
-  } catch {
+  } catch (error) {
+    console.error("[UPDATE_SISWA_ERROR]:", error)
     return NextResponse.json({ error: "Gagal mengupdate siswa" }, { status: 500 })
   }
 }

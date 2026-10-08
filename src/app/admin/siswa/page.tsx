@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Users, Search, ChevronRight, BarChart3, Upload, FileSpreadsheet, Plus, Trash2, UserPlus, Pencil, KeyRound, RotateCcw, School, ArrowLeft, GraduationCap, FolderPlus, Clock, Check, X } from "lucide-react"
-import { motion } from "framer-motion"
+import { Users, Search, ChevronRight, BarChart3, Upload, FileSpreadsheet, Plus, Trash2, UserPlus, Pencil, KeyRound, RotateCcw, School, ArrowLeft, GraduationCap, FolderPlus, Clock, Check, X, CheckSquare, Square, ArrowRightLeft } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import * as XLSX from "xlsx"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -34,6 +34,11 @@ export default function AdminSiswaPage() {
   const [newNama, setNewNama] = useState("")
   const [newNisn, setNewNisn] = useState("")
   const fileRef = useRef<HTMLInputElement>(null)
+
+  // State Batch Pindah Siswa
+  const [selectedSiswaIds, setSelectedSiswaIds] = useState<string[]>([])
+  const [batchTargetKelas, setBatchTargetKelas] = useState<string>("")
+  const [batchMoveLoading, setBatchMoveLoading] = useState(false)
 
   const [editTarget, setEditTarget] = useState<SiswaData | null>(null)
   const [editNama, setEditNama] = useState("")
@@ -91,9 +96,58 @@ export default function AdminSiswaPage() {
   }
 
   useEffect(() => {
+    setSelectedSiswaIds([])
+    setBatchTargetKelas("")
     if (selectedKelas) fetchSiswa(selectedKelas)
     else setSiswa([])
-  }, [selectedKelas])
+  }, [selectedKelas, showUnmatched])
+
+  function toggleSelectSiswa(id: string) {
+    setSelectedSiswaIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    )
+  }
+
+  function toggleSelectAllSiswa(list: SiswaData[]) {
+    const ids = list.map(s => s.id)
+    const isAllSelected = ids.length > 0 && ids.every(id => selectedSiswaIds.includes(id))
+    if (isAllSelected) {
+      setSelectedSiswaIds(prev => prev.filter(id => !ids.includes(id)))
+    } else {
+      setSelectedSiswaIds(prev => Array.from(new Set([...prev, ...ids])))
+    }
+  }
+
+  async function handleBatchMoveSiswa() {
+    if (selectedSiswaIds.length === 0) return
+    if (!batchTargetKelas) {
+      toast.error("Pilih kelas tujuan terlebih dahulu")
+      return
+    }
+    setBatchMoveLoading(true)
+    try {
+      const res = await fetch("/api/siswa", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ids: selectedSiswaIds,
+          targetKelas: batchTargetKelas,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Gagal memindahkan siswa")
+
+      toast.success(`${data.count || selectedSiswaIds.length} siswa berhasil dipindahkan ke Kelas ${batchTargetKelas}`)
+      setSelectedSiswaIds([])
+      setBatchTargetKelas("")
+      await fetchKelas()
+      if (selectedKelas) await fetchSiswa(selectedKelas)
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Gagal memindahkan siswa")
+    } finally {
+      setBatchMoveLoading(false)
+    }
+  }
 
   async function fetchKelas() {
     try {
@@ -546,6 +600,82 @@ export default function AdminSiswaPage() {
             </Card>
           )}
 
+          {/* Batch Transfer Toolbar */}
+          {filtered.length > 0 && (
+            <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleSelectAllSiswa(filtered)}
+                  className="h-8 px-2.5 text-xs font-medium text-slate-700 hover:text-emerald-700 gap-1.5"
+                >
+                  {filtered.length > 0 && filtered.every(s => selectedSiswaIds.includes(s.id)) ? (
+                    <CheckSquare className="h-4 w-4 text-emerald-600" />
+                  ) : (
+                    <Square className="h-4 w-4 text-slate-400" />
+                  )}
+                  <span>
+                    {filtered.length > 0 && filtered.every(s => selectedSiswaIds.includes(s.id))
+                      ? "Batal Pilih Semua"
+                      : "Pilih Semua Siswa"}
+                  </span>
+                </Button>
+                {selectedSiswaIds.length > 0 && (
+                  <Badge className="bg-emerald-600 text-white font-medium text-xs px-2 py-0.5">
+                    {selectedSiswaIds.length} siswa dipilih
+                  </Badge>
+                )}
+              </div>
+
+              {selectedSiswaIds.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Select value={batchTargetKelas} onValueChange={(v) => setBatchTargetKelas(v ?? "")}>
+                    <SelectTrigger className="w-[140px] h-8 text-xs bg-white">
+                      <SelectValue placeholder="Pilih Kelas Tujuan" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {kelasList
+                        .filter(k => k.nama !== selectedKelas)
+                        .map(k => (
+                          <SelectItem key={k.id} value={k.nama}>
+                            Kelas {k.nama}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Button
+                    size="sm"
+                    disabled={!batchTargetKelas || batchMoveLoading}
+                    onClick={handleBatchMoveSiswa}
+                    className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-sm"
+                  >
+                    <ArrowRightLeft className="h-3.5 w-3.5" />
+                    <span>
+                      {batchMoveLoading
+                        ? "Memindahkan..."
+                        : batchTargetKelas
+                        ? `Pindah ke ${batchTargetKelas}`
+                        : "Pindahkan Siswa"}
+                    </span>
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { setSelectedSiswaIds([]); setBatchTargetKelas("") }}
+                    className="h-8 text-xs px-2.5 text-slate-600"
+                  >
+                    Batal
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -554,26 +684,50 @@ export default function AdminSiswaPage() {
 
           {/* Daftar siswa */}
           <div className="space-y-2">
-            {filtered.map((s, i) => (
-              <motion.div key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
-                <div
-                  onClick={() => router.push(`/admin/laporan/siswa?id=${s.id}`)}
-                  className="cursor-pointer"
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === "Enter") router.push(`/admin/laporan/siswa?id=${s.id}`) }}
-                >
-                  <Card className="border-0 shadow-sm hover:shadow-md transition-all">
-                    <CardContent className="flex items-center justify-between p-4">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
-                          {s.nama.charAt(0)}
+            {filtered.map((s, i) => {
+              const isSelected = selectedSiswaIds.includes(s.id)
+
+              return (
+                <motion.div key={s.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.02, 0.3) }}>
+                  <div
+                    onClick={() => router.push(`/admin/laporan/siswa?id=${s.id}`)}
+                    className="cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === "Enter") router.push(`/admin/laporan/siswa?id=${s.id}`) }}
+                  >
+                    <Card className={`border shadow-sm hover:shadow-md transition-all ${
+                      isSelected
+                        ? "border-emerald-500 bg-emerald-50/40 ring-1 ring-emerald-400"
+                        : "border-slate-200 hover:border-emerald-200"
+                    }`}>
+                      <CardContent className="flex items-center justify-between p-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {/* Checkbox */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              toggleSelectSiswa(s.id)
+                            }}
+                            className="w-6 h-6 flex items-center justify-center rounded hover:bg-emerald-100/60 transition-colors shrink-0"
+                            title={isSelected ? "Batal pilih" : "Pilih siswa"}
+                          >
+                            {isSelected ? (
+                              <CheckSquare className="h-4 w-4 text-emerald-600" />
+                            ) : (
+                              <Square className="h-4 w-4 text-slate-400" />
+                            )}
+                          </button>
+
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
+                            {s.nama.charAt(0)}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-semibold text-gray-900 truncate">{s.nama}</div>
+                            <div className="text-xs text-gray-400">{s.nisn ? `NISN ${s.nisn}` : "Tanpa NISN"}</div>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <div className="font-semibold text-gray-900 truncate">{s.nama}</div>
-                          <div className="text-xs text-gray-400">{s.nisn ? `NISN ${s.nisn}` : "Tanpa NISN"}</div>
-                        </div>
-                      </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <div className="hidden sm:flex items-center gap-2">
                           <Badge variant={s._count.minatBakat > 0 ? "default" : "outline"} className="text-[10px]">
@@ -630,7 +784,8 @@ export default function AdminSiswaPage() {
                   </Card>
                 </div>
               </motion.div>
-            ))}
+            )
+          })}
             {filtered.length === 0 && (
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-8 text-center">

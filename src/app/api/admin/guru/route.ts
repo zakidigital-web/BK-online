@@ -52,19 +52,37 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    const { id, name, role, kelas, mapel, nipy } = await req.json()
+    const body = await req.json()
+    const { id, ids, name, role, kelas, mapel, nipy } = body
+
+    const validRoles = ["admin", "guru", "guru-mapel", "walas"]
+    if (role && !validRoles.includes(role)) {
+      return NextResponse.json({ error: "Role tidak valid" }, { status: 400 })
+    }
+
+    // Dukungan Batch Update untuk banyak guru sekaligus
+    if (Array.isArray(ids) && ids.length > 0) {
+      const dataToUpdate: any = {}
+      if (role !== undefined) dataToUpdate.role = role
+      if (kelas !== undefined) dataToUpdate.kelas = kelas ? String(kelas).trim().toUpperCase() : null
+      if (mapel !== undefined) dataToUpdate.mapel = mapel ? String(mapel).trim() : null
+
+      const result = await prisma.user.updateMany({
+        where: { id: { in: ids } },
+        data: dataToUpdate,
+      })
+
+      return NextResponse.json({ success: true, count: result.count })
+    }
+
+    // Update single guru
     if (!id) {
-      return NextResponse.json({ error: "ID guru diperlukan" }, { status: 400 })
+      return NextResponse.json({ error: "ID guru atau daftar IDs diperlukan" }, { status: 400 })
     }
 
     const existing = await prisma.user.findUnique({ where: { id } })
     if (!existing) {
       return NextResponse.json({ error: "Akun tidak ditemukan" }, { status: 404 })
-    }
-
-    const validRoles = ["admin", "guru", "guru-mapel", "walas"]
-    if (role && !validRoles.includes(role)) {
-      return NextResponse.json({ error: "Role tidak valid" }, { status: 400 })
     }
 
     const updated = await prisma.user.update({

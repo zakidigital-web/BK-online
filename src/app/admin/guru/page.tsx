@@ -9,8 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
-import { Users, Plus, Trash2, GraduationCap, ShieldCheck, UserCog, KeyRound, Upload, FileSpreadsheet, Pencil, Search } from "lucide-react"
-import { motion } from "framer-motion"
+import { Users, Plus, Trash2, GraduationCap, ShieldCheck, UserCog, KeyRound, Upload, FileSpreadsheet, Pencil, Search, CheckSquare, Square } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import * as XLSX from "xlsx"
 
@@ -61,6 +61,14 @@ export default function GuruPage() {
   const [filterRole, setFilterRole] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
 
+  // State untuk batch selection & edit
+  const [selectedGuruIds, setSelectedGuruIds] = useState<string[]>([])
+  const [batchRoleModalOpen, setBatchRoleModalOpen] = useState(false)
+  const [batchRole, setBatchRole] = useState("guru")
+  const [batchKelas, setBatchKelas] = useState("")
+  const [batchMapel, setBatchMapel] = useState("")
+  const [batchLoading, setBatchLoading] = useState(false)
+
   // State untuk edit akun guru & role
   const [editTarget, setEditTarget] = useState<GuruData | null>(null)
   const [editName, setEditName] = useState("")
@@ -76,6 +84,51 @@ export default function GuruPage() {
 
   const importFileRef = useRef<HTMLInputElement>(null)
   const [importLoading, setImportLoading] = useState(false)
+
+  function toggleSelectGuru(id: string) {
+    setSelectedGuruIds(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    )
+  }
+
+  function toggleSelectAll(filteredList: GuruData[]) {
+    const nonAdminList = filteredList.filter(g => g.role !== "admin")
+    const nonAdminIds = nonAdminList.map(g => g.id)
+    const isAllSelected = nonAdminIds.length > 0 && nonAdminIds.every(id => selectedGuruIds.includes(id))
+    if (isAllSelected) {
+      setSelectedGuruIds(prev => prev.filter(id => !nonAdminIds.includes(id)))
+    } else {
+      setSelectedGuruIds(prev => Array.from(new Set([...prev, ...nonAdminIds])))
+    }
+  }
+
+  async function handleBatchUpdateRole(e: React.FormEvent) {
+    e.preventDefault()
+    if (selectedGuruIds.length === 0) return
+    setBatchLoading(true)
+    try {
+      const res = await fetch("/api/admin/guru", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ids: selectedGuruIds,
+          role: batchRole,
+          kelas: batchRole === "walas" ? batchKelas || null : null,
+          mapel: batchRole === "guru-mapel" ? batchMapel.trim() || null : (batchRole === "guru" ? "BK" : null),
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Gagal mengubah role")
+      toast.success(`${data.count || selectedGuruIds.length} akun guru berhasil diperbarui menjadi ${roleLabel[batchRole] || batchRole}`)
+      setSelectedGuruIds([])
+      setBatchRoleModalOpen(false)
+      fetchGuru()
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Gagal batch update role")
+    } finally {
+      setBatchLoading(false)
+    }
+  }
 
   function bukaEditModal(g: GuruData) {
     setEditTarget(g)
@@ -404,43 +457,128 @@ export default function GuruPage() {
               )
             }
 
+            const nonAdminFiltered = filtered.filter(g => g.role !== "admin")
+            const isAllFilteredSelected = nonAdminFiltered.length > 0 && nonAdminFiltered.every(g => selectedGuruIds.includes(g.id))
+
             return (
-              <div className="space-y-2">
-                {filtered.map((g, i) => (
-                  <motion.div
-                    key={g.id}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(i * 0.02, 0.3) }}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 sm:px-4 shadow-sm hover:border-blue-200 transition-colors"
-                  >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
-                        {g.name.charAt(0)}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-gray-900 text-sm">{g.name}</span>
-                          <Badge className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${roleColor[g.role] || "bg-gray-100 text-gray-600"}`}>
-                            {roleLabel[g.role] || g.role}
-                          </Badge>
-                          {g.kelas && (
-                            <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-800 border-amber-200">
-                              Kelas {g.kelas}
-                            </Badge>
-                          )}
-                          {g.mapel && (
-                            <Badge variant="outline" className="text-[10px] bg-sky-50 text-sky-800 border-sky-200">
-                              {g.mapel}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
-                          <span>User: <strong className="text-gray-700">{g.email}</strong></span>
-                          {g.nipy && <span>NIP: {g.nipy}</span>}
-                        </div>
-                      </div>
+              <div className="space-y-3">
+                {/* Batch Action Toolbar */}
+                <div className="flex items-center justify-between gap-2 p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleSelectAll(filtered)}
+                      className="h-7 px-2 text-xs font-medium text-slate-700 hover:text-blue-600 gap-1.5"
+                    >
+                      {isAllFilteredSelected ? (
+                        <CheckSquare className="h-4 w-4 text-blue-600" />
+                      ) : (
+                        <Square className="h-4 w-4 text-slate-400" />
+                      )}
+                      <span>{isAllFilteredSelected ? "Batal Pilih Semua" : "Pilih Semua (Non-Admin)"}</span>
+                    </Button>
+                    {selectedGuruIds.length > 0 && (
+                      <Badge className="bg-blue-600 text-white font-medium text-[11px]">
+                        {selectedGuruIds.length} dipilih
+                      </Badge>
+                    )}
+                  </div>
+
+                  {selectedGuruIds.length > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setBatchRole("guru")
+                          setBatchKelas("")
+                          setBatchMapel("")
+                          setBatchRoleModalOpen(true)
+                        }}
+                        className="h-7 text-xs bg-blue-600 hover:bg-blue-700 text-white gap-1 shadow-sm"
+                      >
+                        <UserCog className="h-3.5 w-3.5" />
+                        <span>Batch Ubah Role ({selectedGuruIds.length})</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedGuruIds([])}
+                        className="h-7 text-xs px-2 text-slate-600"
+                      >
+                        Batal
+                      </Button>
                     </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  {filtered.map((g, i) => {
+                    const isSelected = selectedGuruIds.includes(g.id)
+                    const isAdmin = g.role === "admin"
+
+                    return (
+                      <motion.div
+                        key={g.id}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: Math.min(i * 0.02, 0.3) }}
+                        className={`flex items-center justify-between gap-3 rounded-xl border p-3 sm:px-4 shadow-sm transition-all ${
+                          isSelected
+                            ? "border-blue-500 bg-blue-50/40 ring-1 ring-blue-400"
+                            : "border-slate-200 bg-white hover:border-blue-200"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          {/* Checkbox selector */}
+                          <div className="shrink-0 flex items-center">
+                            {isAdmin ? (
+                              <div className="w-5 h-5 flex items-center justify-center text-slate-300" title="Akun Admin dilindungi">
+                                <ShieldCheck className="h-4 w-4" />
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => toggleSelectGuru(g.id)}
+                                className="w-6 h-6 flex items-center justify-center rounded hover:bg-slate-100 transition-colors"
+                              >
+                                {isSelected ? (
+                                  <CheckSquare className="h-4 w-4 text-blue-600" />
+                                ) : (
+                                  <Square className="h-4 w-4 text-slate-400" />
+                                )}
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700">
+                            {g.name.charAt(0)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-semibold text-gray-900 text-sm">{g.name}</span>
+                              <Badge className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${roleColor[g.role] || "bg-gray-100 text-gray-600"}`}>
+                                {roleLabel[g.role] || g.role}
+                              </Badge>
+                              {g.kelas && (
+                                <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-800 border-amber-200">
+                                  Kelas {g.kelas}
+                                </Badge>
+                              )}
+                              {g.mapel && (
+                                <Badge variant="outline" className="text-[10px] bg-sky-50 text-sky-800 border-sky-200">
+                                  {g.mapel}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
+                              <span>User: <strong className="text-gray-700">{g.email}</strong></span>
+                              {g.nipy && <span>NIP: {g.nipy}</span>}
+                            </div>
+                          </div>
+                        </div>
 
                     <div className="flex items-center gap-1 shrink-0">
                       <Button
@@ -474,7 +612,9 @@ export default function GuruPage() {
                       </Button>
                     </div>
                   </motion.div>
-                ))}
+                )
+              })}
+                </div>
               </div>
             )
           })()}
@@ -613,6 +753,89 @@ export default function GuruPage() {
               <Button type="button" variant="outline" onClick={() => setResetTarget(null)}>Batal</Button>
               <Button type="submit" disabled={resetLoading} className="bg-blue-600 hover:bg-blue-700">
                 {resetLoading ? "Menyimpan..." : "Reset Password"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Batch Edit Role */}
+      <Dialog open={batchRoleModalOpen} onOpenChange={setBatchRoleModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <UserCog className="h-5 w-5 text-blue-600" />
+              Batch Ubah Peran ({selectedGuruIds.length} Akun Terpilih)
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleBatchUpdateRole} className="space-y-4 pt-1">
+            <div className="rounded-lg bg-blue-50/70 p-3 border border-blue-100 text-xs text-blue-800">
+              Peran dari <strong>{selectedGuruIds.length} akun guru terpilih</strong> akan diubah secara serentak.
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-700">Pilih Peran Baru</label>
+              <Select value={batchRole} onValueChange={(v) => setBatchRole(v ?? "guru")}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="guru">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-blue-100 text-blue-700 text-[10px]">Guru BK</Badge>
+                      <span className="text-xs text-gray-500">- Akses konseling, asesmen BK</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="guru-mapel">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-green-100 text-green-700 text-[10px]">Guru Mapel</Badge>
+                      <span className="text-xs text-gray-500">- Guru biasa mata pelajaran</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="walas">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-amber-100 text-amber-700 text-[10px]">Wali Kelas</Badge>
+                      <span className="text-xs text-gray-500">- Akses pantau kelas binaan</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {batchRole === "walas" && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-gray-700">Tetapkan Kelas Binaan (Opsional)</label>
+                <Select value={batchKelas} onValueChange={(v) => setBatchKelas(v ?? "")}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Pilih kelas (atau kosongkan)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">-- Kosongkan / Atur Nanti --</SelectItem>
+                    {kelasList.map((k) => (
+                      <SelectItem key={k} value={k}>Kelas {k}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {batchRole === "guru-mapel" && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-gray-700">Mata Pelajaran (Opsional)</label>
+                <Input
+                  value={batchMapel}
+                  onChange={(e) => setBatchMapel(e.target.value)}
+                  placeholder="Contoh: Matematika, IPA (kosongkan jika berbeda-beda)"
+                />
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={() => setBatchRoleModalOpen(false)}>
+                Batal
+              </Button>
+              <Button type="submit" disabled={batchLoading} className="bg-blue-600 hover:bg-blue-700">
+                {batchLoading ? "Memproses..." : `Terapkan ke ${selectedGuruIds.length} Guru`}
               </Button>
             </div>
           </form>
