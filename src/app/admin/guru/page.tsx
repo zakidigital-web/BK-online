@@ -77,6 +77,27 @@ export default function GuruPage() {
   const [editMapel, setEditMapel] = useState("")
   const [editNipy, setEditNipy] = useState("")
   const [editLoading, setEditLoading] = useState(false)
+  // State untuk modal tambah guru baru
+  const [tambahModalOpen, setTambahModalOpen] = useState(false)
+
+  function bukaTambahModal() {
+    setName("")
+    setUsername("")
+    setPassword("guru123")
+    setRole("guru")
+    setNipy("")
+    setKelas("")
+    setMapel("BK")
+    setTambahModalOpen(true)
+  }
+
+  // Auto-suggest username when NIP or Name typed
+  function handleNipyChange(val: string) {
+    setNipy(val)
+    if (!username && val.trim()) {
+      setUsername(val.trim().toLowerCase())
+    }
+  }
 
   const [resetTarget, setResetTarget] = useState<GuruData | null>(null)
   const [resetPassword, setResetPassword] = useState("")
@@ -310,91 +331,35 @@ export default function GuruPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100">
-          <GraduationCap className="h-6 w-6 text-blue-600" />
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 shadow-sm">
+            <GraduationCap className="h-6 w-6 text-blue-600" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Kelola Akun Guru, Wali Kelas & Admin</h1>
+            <p className="text-sm text-gray-500">
+              {guru.length} akun terdaftar | 
+              {[["admin","Admin"],["guru","Guru BK"],["guru-mapel","Guru Mapel"],["walas","Wali Kelas"]]
+                .map(([r,l]) => ` ${guru.filter(g=>g.role===r).length} ${l}`)
+                .join(",")}
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Kelola Akun Guru, Wali Kelas & Admin</h1>
-          <p className="text-sm text-gray-500">
-            {guru.length} akun | 
-            {[["admin","Admin"],["guru","Guru BK"],["guru-mapel","Guru Mapel"],["walas","Wali Kelas"]]
-              .map(([r,l]) => `${guru.filter(g=>g.role===r).length} ${l}`)
-              .join(", ")}
-          </p>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button onClick={bukaTambahModal} className="bg-blue-600 hover:bg-blue-700 text-white gap-1.5 shadow-sm">
+            <Plus className="h-4 w-4" /> Tambah Guru Baru
+          </Button>
+          <Button variant="outline" onClick={() => importFileRef.current?.click()} disabled={importLoading} className="gap-1.5 bg-white">
+            <Upload className="h-4 w-4 text-emerald-600" /> {importLoading ? "Mengimport..." : "Import Excel"}
+          </Button>
+          <Button variant="outline" onClick={downloadTemplateGuru} className="gap-1.5 bg-white text-slate-600">
+            <FileSpreadsheet className="h-4 w-4 text-slate-500" /> Template
+          </Button>
+          <input ref={importFileRef} type="file" accept=".xlsx,.xls" onChange={importGuruExcel} className="hidden" />
         </div>
       </div>
-
-      <Card className="border-0 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <UserCog className="h-5 w-5 text-blue-600" />
-            Tambah Akun Baru
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex flex-wrap gap-2">
-              <Input placeholder="Nama lengkap" value={name} onChange={(e) => setName(e.target.value)} className="max-w-xs" />
-              <Input placeholder="Username (email)" value={username} onChange={(e) => setUsername(e.target.value)} className="max-w-xs" />
-              <Input placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="max-w-[160px]" />
-              <Select value={role} onValueChange={(v) => setRole(v ?? "guru")}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="guru">Guru BK</SelectItem>
-                  <SelectItem value="guru-mapel">Guru Mapel</SelectItem>
-                  <SelectItem value="walas">Wali Kelas</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Input placeholder="NIPY (opsional)" value={nipy} onChange={(e) => setNipy(e.target.value)} className="max-w-[160px]" />
-              <Select value={kelas} onValueChange={(v) => setKelas(v ?? "")}>
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Kelas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">-- Tanpa kelas --</SelectItem>
-                  {kelasList.map((k) => (
-                    <SelectItem key={k} value={k}>{k}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Input placeholder="Mapel (opsional)" value={mapel} onChange={(e) => setMapel(e.target.value)} className="max-w-[160px]" />
-              <Button onClick={tambahGuru} disabled={loading} className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="h-4 w-4" /> Tambah
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="border-0 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <FileSpreadsheet className="h-5 w-5 text-emerald-600" />
-            Import Akun dari Excel
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-gray-500 mb-3">
-            Upload file Excel dengan kolom: Nama, Username, Password, Role, NIPY, Kelas, Mapel.
-            Password opsional (default = username). Role: <Badge variant="outline" className="text-[10px]">guru</Badge> (Guru BK), <Badge variant="outline" className="text-[10px]">walas</Badge>, <Badge variant="outline" className="text-[10px]">guru-mapel</Badge>, <Badge variant="outline" className="text-[10px]">admin</Badge>.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={downloadTemplateGuru} className="gap-1.5">
-              <FileSpreadsheet className="h-4 w-4" /> Download Template
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => importFileRef.current?.click()} disabled={importLoading} className="gap-1.5">
-              <Upload className="h-4 w-4" /> {importLoading ? "Mengimport..." : "Upload Excel"}
-            </Button>
-            <input ref={importFileRef} type="file" accept=".xlsx,.xls" onChange={importGuruExcel} className="hidden" />
-          </div>
-        </CardContent>
-      </Card>
 
       <Card className="border-0 shadow-sm">
         <CardHeader>
@@ -836,6 +801,163 @@ export default function GuruPage() {
               </Button>
               <Button type="submit" disabled={batchLoading} className="bg-blue-600 hover:bg-blue-700">
                 {batchLoading ? "Memproses..." : `Terapkan ke ${selectedGuruIds.length} Guru`}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Tambah Guru / Staf Baru (Efisien & Rapi) */}
+      <Dialog open={tambahModalOpen} onOpenChange={setTambahModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <UserCog className="h-5 w-5 text-blue-600" />
+              Tambah Akun Guru / Staf Baru
+            </DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              tambahGuru()
+            }}
+            className="space-y-4 pt-1"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="text-xs font-semibold text-gray-700">Nama Lengkap & Gelar *</label>
+                <Input
+                  placeholder="Contoh: Dra. Hj. Sri Wahyuni, M.Pd"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value)
+                    if (!username && e.target.value) {
+                      const slug = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 15)
+                      setUsername(slug)
+                    }
+                  }}
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-gray-700">NIP / NIPY (Opsional)</label>
+                <Input
+                  placeholder="Contoh: 19700817..."
+                  value={nipy}
+                  onChange={(e) => handleNipyChange(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-gray-700">Username Login *</label>
+                <Input
+                  placeholder="Username untuk login"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="text-xs font-semibold text-gray-700">Password Login *</label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Password akun"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPassword("guru123")}
+                    className="text-xs shrink-0"
+                    title="Gunakan password default"
+                  >
+                    Default: guru123
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="text-xs font-semibold text-gray-700">Peran / Role Akun *</label>
+                <Select
+                  value={role}
+                  onValueChange={(v) => {
+                    const r = v ?? "guru"
+                    setRole(r)
+                    if (r === "guru") setMapel("BK")
+                    else if (r === "walas") setMapel("")
+                  }}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="guru">
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-blue-100 text-blue-700 text-[10px]">Guru BK</Badge>
+                        <span className="text-xs text-gray-500">- Akses konseling, asesmen BK</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="guru-mapel">
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-green-100 text-green-700 text-[10px]">Guru Mapel</Badge>
+                        <span className="text-xs text-gray-500">- Guru pengajar mata pelajaran</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="walas">
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-amber-100 text-amber-700 text-[10px]">Wali Kelas</Badge>
+                        <span className="text-xs text-gray-500">- Akses pantau kelas binaan</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="admin">
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-purple-100 text-purple-700 text-[10px]">Administrator</Badge>
+                        <span className="text-xs text-gray-500">- Akses penuh pengaturan sekolah</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {role === "walas" && (
+                <div className="space-y-1.5 sm:col-span-2">
+                  <label className="text-xs font-semibold text-gray-700">Kelas Binaan (Wajib untuk Wali Kelas)</label>
+                  <Select value={kelas} onValueChange={(v) => setKelas(v ?? "")}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Pilih kelas yang dibina" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {kelasList.map((k) => (
+                        <SelectItem key={k} value={k}>Kelas {k}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {(role === "guru-mapel" || role === "guru") && (
+                <div className="space-y-1.5 sm:col-span-2">
+                  <label className="text-xs font-semibold text-gray-700">Mata Pelajaran (Mapel)</label>
+                  <Input
+                    placeholder={role === "guru" ? "BK" : "Contoh: Matematika, Bahasa Indonesia, IPA"}
+                    value={mapel}
+                    onChange={(e) => setMapel(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+              <Button type="button" variant="outline" onClick={() => setTambahModalOpen(false)}>
+                Batal
+              </Button>
+              <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
+                {loading ? "Menyimpan..." : "Simpan Akun Guru"}
               </Button>
             </div>
           </form>

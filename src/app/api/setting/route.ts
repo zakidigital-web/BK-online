@@ -22,17 +22,32 @@ export async function PUT(req: Request) {
       return NextResponse.json({ error: "Akses ditolak: Memerlukan hak akses Super Administrator" }, { status: 403 })
     }
 
-    const { key, value } = await req.json()
+    const body = await req.json()
+    const { key, value, settings } = body
+
+    if (settings && typeof settings === "object") {
+      const updates = Object.entries(settings).map(([k, v]) =>
+        prisma.setting.upsert({
+          where: { key: k },
+          update: { value: String(v) },
+          create: { key: k, value: String(v) },
+        })
+      )
+      await prisma.$transaction(updates)
+      return NextResponse.json({ success: true, count: updates.length })
+    }
+
     if (!key) {
       return NextResponse.json({ error: "Key diperlukan" }, { status: 400 })
     }
     const setting = await prisma.setting.upsert({
       where: { key },
-      update: { value },
-      create: { key, value },
+      update: { value: String(value ?? "") },
+      create: { key, value: String(value ?? "") },
     })
     return NextResponse.json({ setting })
-  } catch {
+  } catch (error) {
+    console.error("[SETTING_PUT_ERROR]:", error)
     return NextResponse.json({ error: "Gagal menyimpan setting" }, { status: 500 })
   }
 }

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Users, Search, ChevronRight, BarChart3, Upload, FileSpreadsheet, Plus, Trash2, UserPlus, Pencil, KeyRound, RotateCcw, School, ArrowLeft, GraduationCap, FolderPlus, Clock, Check, X, CheckSquare, Square, ArrowRightLeft } from "lucide-react"
+import { Users, Search, ChevronRight, BarChart3, Upload, FileSpreadsheet, Plus, Trash2, UserPlus, Pencil, KeyRound, RotateCcw, School, ArrowLeft, GraduationCap, FolderPlus, Clock, Check, X, CheckSquare, Square, ArrowRightLeft, Sparkles, Layers, FileText } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 import * as XLSX from "xlsx"
@@ -57,6 +57,16 @@ export default function AdminSiswaPage() {
 
   const massalFileRef = useRef<HTMLInputElement>(null)
   const [massalLoading, setMassalLoading] = useState(false)
+
+  // State Modal Tambah Siswa Terstruktur & Efisien
+  const [tambahSiswaModalOpen, setTambahSiswaModalOpen] = useState(false)
+  const [modalTargetKelas, setModalTargetKelas] = useState("")
+  const [modalSingleNama, setModalSingleNama] = useState("")
+  const [modalSingleNisn, setModalSingleNisn] = useState("")
+  const [modalMultiText, setModalMultiText] = useState("")
+  const [modalActiveTab, setModalActiveTab] = useState<"single" | "multi" | "excel">("single")
+  const [modalSubmitting, setModalSubmitting] = useState(false)
+  const modalExcelRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { fetchKelas(); fetchPending() }, [])
 
@@ -262,21 +272,186 @@ export default function AdminSiswaPage() {
     } catch { toast.error("Gagal mereset asesmen") }
   }
 
-  async function tambahKelas() {
-    if (!newKelasName.trim()) { toast.error("Nama kelas harus diisi"); return }
-    setKelasLoading(true)
+  function bukaModalTambahSiswa(defaultKelas?: string) {
+    setModalTargetKelas(defaultKelas || selectedKelas || (kelasList[0]?.nama ?? ""))
+    setModalSingleNama("")
+    setModalSingleNisn("")
+    setModalMultiText("")
+    setModalActiveTab("single")
+    setTambahSiswaModalOpen(true)
+  }
+
+  async function handleSimpanSingleSiswa(e: React.FormEvent) {
+    e.preventDefault()
+    if (!modalTargetKelas) { toast.error("Pilih kelas tujuan"); return }
+    if (!modalSingleNama.trim()) { toast.error("Nama siswa harus diisi"); return }
+    setModalSubmitting(true)
     try {
-      const res = await fetch("/api/kelas", {
+      const res = await fetch("/api/siswa", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nama: newKelasName.trim().toUpperCase() }),
+        body: JSON.stringify({
+          nama: modalSingleNama.trim(),
+          kelas: modalTargetKelas,
+          nisn: modalSingleNisn.trim() || undefined,
+        }),
       })
-      if (!res.ok) throw new Error((await res.json()).error || "Gagal")
-      toast.success(`Kelas ${newKelasName.trim().toUpperCase()} ditambahkan`)
-      setNewKelasName(""); setKelasDialogOpen(false)
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Gagal menambah siswa")
+      toast.success(`Siswa ${modalSingleNama.trim()} berhasil ditambahkan ke Kelas ${modalTargetKelas}`)
+      setTambahSiswaModalOpen(false)
       fetchKelas()
-    } catch (e: unknown) { toast.error(e instanceof Error ? e.message : "Gagal menambah kelas") }
-    finally { setKelasLoading(false) }
+      if (selectedKelas) fetchSiswa(selectedKelas)
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Gagal menambah siswa")
+    } finally {
+      setModalSubmitting(false)
+    }
+  }
+
+  async function handleSimpanMultiSiswa(e: React.FormEvent) {
+    e.preventDefault()
+    if (!modalTargetKelas) { toast.error("Pilih kelas tujuan"); return }
+    const lines = modalMultiText
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean)
+
+    if (lines.length === 0) {
+      toast.error("Tempelkan minimal 1 baris nama siswa"); return
+    }
+
+    const items = lines.map((line) => {
+      const parts = line.split(/[,\t]+/).map((p) => p.trim())
+      const nama = parts[0]
+      const nisn = parts[1] || undefined
+      return { nama, kelas: modalTargetKelas, nisn }
+    }).filter((x) => Boolean(x.nama))
+
+    if (items.length === 0) {
+      toast.error("Tidak ada data siswa yang valid"); return
+    }
+
+    setModalSubmitting(true)
+    try {
+      const res = await fetch("/api/siswa/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ siswa: items }),
+      })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || "Gagal menambah siswa")
+      toast.success(`${result.berhasil || items.length} siswa berhasil ditambahkan ke Kelas ${modalTargetKelas}`)
+      setTambahSiswaModalOpen(false)
+      fetchKelas()
+      if (selectedKelas) fetchSiswa(selectedKelas)
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Gagal menambah daftar siswa")
+    } finally {
+      setModalSubmitting(false)
+    }
+  }
+
+  async function importModalExcel(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !modalTargetKelas) return
+    setModalSubmitting(true)
+    try {
+      const buf = await file.arrayBuffer()
+      const wb = XLSX.read(buf)
+      const ws = wb.Sheets[wb.SheetNames[0]]
+      const data = XLSX.utils.sheet_to_json<string[]>(ws, { header: 1 })
+      const items: { nama: string; kelas: string; nisn?: string }[] = []
+      for (let i = 1; i < data.length; i++) {
+        const row = data[i]
+        if (row && row[0] && String(row[0]).trim()) {
+          items.push({
+            nama: String(row[0]).trim(),
+            kelas: modalTargetKelas,
+            nisn: row[1] ? String(row[1]).trim() : undefined,
+          })
+        }
+      }
+      if (items.length === 0) { toast.error("Tidak ada data siswa di file Excel"); return }
+      const res = await fetch("/api/siswa/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ siswa: items }),
+      })
+      const result = await res.json()
+      if (!res.ok) throw new Error(result.error || "Gagal import")
+      toast.success(`${result.berhasil || items.length} siswa berhasil ditambahkan ke Kelas ${modalTargetKelas}`)
+      setTambahSiswaModalOpen(false)
+      fetchKelas()
+      if (selectedKelas) fetchSiswa(selectedKelas)
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Gagal import Excel")
+    } finally {
+      setModalSubmitting(false)
+      if (modalExcelRef.current) modalExcelRef.current.value = ""
+    }
+  }
+
+  async function tambahKelas() {
+    if (!newKelasName.trim()) { toast.error("Nama kelas harus diisi"); return }
+    const items = newKelasName
+      .split(/[,;\n]+/)
+      .map((k) => k.trim().toUpperCase())
+      .filter(Boolean)
+
+    if (items.length === 0) return
+    setKelasLoading(true)
+    try {
+      let sukses = 0
+      for (const nama of items) {
+        const res = await fetch("/api/kelas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nama }),
+        })
+        if (res.ok) sukses++
+      }
+      toast.success(`${sukses} kelas berhasil ditambahkan`)
+      setNewKelasName("")
+      setKelasDialogOpen(false)
+      fetchKelas()
+    } catch {
+      toast.error("Gagal menambah kelas")
+    } finally {
+      setKelasLoading(false)
+    }
+  }
+
+  async function generateJenjangKelas(jenjang: number) {
+    const letters = ["A", "B", "C", "D", "E", "F", "G", "H", "I"]
+    const targets = letters.map((l) => `${jenjang}${l}`)
+    const existingNames = new Set(kelasList.map((k) => k.nama))
+    const belumAda = targets.filter((k) => !existingNames.has(k))
+
+    if (belumAda.length === 0) {
+      toast.info(`Semua kelas ${jenjang}A–${jenjang}I sudah ada.`)
+      return
+    }
+
+    setKelasLoading(true)
+    try {
+      let sukses = 0
+      for (const nama of belumAda) {
+        const res = await fetch("/api/kelas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nama }),
+        })
+        if (res.ok) sukses++
+      }
+      toast.success(`${sukses} kelas baru (${jenjang}A–${jenjang}I) berhasil dibuat`)
+      setKelasDialogOpen(false)
+      fetchKelas()
+    } catch {
+      toast.error("Gagal membuat rombel kelas")
+    } finally {
+      setKelasLoading(false)
+    }
   }
 
   async function hapusKelas(nama: string) {
@@ -443,14 +618,20 @@ export default function AdminSiswaPage() {
         <>
           {/* Toolbar kelas */}
           <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" onClick={() => setKelasDialogOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 gap-1">
-              <FolderPlus className="h-4 w-4" /> Tambah Kelas
+            <Button size="sm" onClick={() => bukaModalTambahSiswa()} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-sm">
+              <UserPlus className="h-4 w-4" /> Tambah Siswa
+            </Button>
+            <Button size="sm" onClick={() => setKelasDialogOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white gap-1.5 shadow-sm">
+              <FolderPlus className="h-4 w-4" /> Tambah Rombel Kelas
+            </Button>
+            <Button size="sm" variant="outline" onClick={downloadTemplate} className="gap-1.5">
+              <FileSpreadsheet className="h-4 w-4 text-emerald-600" /> Unduh Template Siswa
             </Button>
             <Button size="sm" variant="outline" onClick={() => massalFileRef.current?.click()} disabled={massalLoading} className="gap-1.5">
               <Upload className="h-4 w-4" /> {massalLoading ? "Mengimport..." : "Import Massal (Excel)"}
             </Button>
             <input ref={massalFileRef} type="file" accept=".xlsx,.xls" onChange={importMassal} className="hidden" />
-            <span className="text-xs text-gray-400">{kelasList.length} kelas terdaftar</span>
+            <span className="text-xs text-gray-400 ml-auto">{kelasList.length} kelas terdaftar</span>
           </div>
 
           {/* Grid kelas */}
@@ -523,7 +704,7 @@ export default function AdminSiswaPage() {
             <Card className="border-0 shadow-sm">
               <CardContent className="p-8 text-center">
                 <School className="mx-auto h-12 w-12 text-gray-200" />
-                <p className="mt-3 text-gray-400">Belum ada kelas. Tambah kelas di Pengaturan.</p>
+                <p className="mt-3 text-gray-400">Belum ada kelas. Tambah rombel kelas terlebih dahulu.</p>
               </CardContent>
             </Card>
           )}
@@ -533,7 +714,7 @@ export default function AdminSiswaPage() {
           {/* Header kelas / unmatched */}
           <div className="flex items-center gap-3 flex-wrap">
             <Button variant="ghost" onClick={() => { setSelectedKelas(null); setShowUnmatched(false) }} className="gap-1">
-              <ArrowLeft className="h-4 w-4" /> {showUnmatched ? "Kelas" : "Kelas"}
+              <ArrowLeft className="h-4 w-4" /> Kembali ke Daftar Kelas
             </Button>
             {showUnmatched ? (
               <div className="flex items-center gap-2">
@@ -554,34 +735,41 @@ export default function AdminSiswaPage() {
             )}
           </div>
 
-          {/* Tambah & Import (sembunyikan saat mode unmatched) */}
+          {/* Action Bar Kelas (bersih & efisien) */}
           {!showUnmatched && (
-          <Card className="border-0 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <UserPlus className="h-4 w-4 text-emerald-600" />
-                Tambah Siswa ke Kelas {selectedKelas}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                <Input placeholder="Nama lengkap" value={newNama} onChange={(e) => setNewNama(e.target.value)}
-                  className="max-w-xs" onKeyDown={(e) => e.key === "Enter" && tambahSiswa()} />
-                <Input placeholder="NISN (opsional)" value={newNisn} onChange={(e) => setNewNisn(e.target.value)}
-                  className="max-w-[160px]" onKeyDown={(e) => e.key === "Enter" && tambahSiswa()} />
-                <Button onClick={tambahSiswa} disabled={adding} className="bg-emerald-600 hover:bg-emerald-700 gap-1">
-                  <Plus className="h-4 w-4" /> Tambah
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-white border border-slate-200 rounded-xl shadow-sm">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  size="sm"
+                  onClick={() => bukaModalTambahSiswa(selectedKelas || undefined)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 shadow-sm font-medium"
+                >
+                  <UserPlus className="h-4 w-4" /> Tambah Siswa ke {selectedKelas}
                 </Button>
-                <Button variant="outline" onClick={downloadTemplate} className="gap-1.5" size="sm">
-                  <FileSpreadsheet className="h-4 w-4" /> Template
-                </Button>
-                <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={importLoading} size="sm" className="gap-1.5">
-                  <Upload className="h-4 w-4" /> Import
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={importLoading}
+                  className="gap-1.5 text-xs text-slate-700"
+                >
+                  <Upload className="h-4 w-4" /> {importLoading ? "Mengimport..." : "Import Excel"}
                 </Button>
                 <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={importFromExcel} className="hidden" />
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={downloadTemplate}
+                  className="gap-1.5 text-xs text-slate-600 hover:text-emerald-700"
+                >
+                  <FileSpreadsheet className="h-4 w-4 text-emerald-600" /> Template Excel
+                </Button>
               </div>
-            </CardContent>
-          </Card>
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                <Users className="h-3.5 w-3.5 text-emerald-600" />
+                <span>Terdaftar: <strong>{siswa.length}</strong> siswa</span>
+              </div>
+            </div>
           )}
 
           {/* Info unmatched */}
@@ -822,24 +1010,277 @@ export default function AdminSiswaPage() {
         </>
       )}
 
-      {/* Dialog Tambah Kelas */}
+      {/* Dialog Tambah Rombel Kelas */}
       <Dialog open={kelasDialogOpen} onOpenChange={setKelasDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <FolderPlus className="h-5 w-5 text-indigo-600" /> Tambah Kelas Baru
+              <FolderPlus className="h-5 w-5 text-indigo-600" /> Tambah Rombel Kelas
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Input placeholder="Nama kelas (contoh: 7A)" value={newKelasName}
-              onChange={(e) => setNewKelasName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && tambahKelas()} autoFocus />
-            <div className="flex justify-end gap-2">
+            <div>
+              <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
+                Nama Kelas / Rombel Baru
+              </label>
+              <Input
+                placeholder="Contoh: 7A atau beberapa: 7A, 7B, 7C"
+                value={newKelasName}
+                onChange={(e) => setNewKelasName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && tambahKelas()}
+                autoFocus
+              />
+              <p className="text-[11px] text-slate-400 mt-1">
+                Bisa masukkan satu atau beberapa nama kelas sekaligus dipisahkan koma.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-indigo-50/70 border border-indigo-100">
+              <p className="text-xs font-semibold text-indigo-900 mb-2.5 flex items-center gap-1.5">
+                <Sparkles className="h-4 w-4 text-indigo-600" />
+                Generator Cepat Rombel SMP (A – I)
+              </p>
+              <p className="text-[11px] text-indigo-700/80 mb-2.5">
+                Buat otomatis 9 rombel sekaligus tanpa mengetik satu per satu:
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={kelasLoading}
+                  onClick={() => generateJenjangKelas(7)}
+                  className="bg-white hover:bg-indigo-100/60 text-indigo-700 text-xs h-8 border-indigo-200 shadow-sm"
+                >
+                  + Rombel 7A–7I
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={kelasLoading}
+                  onClick={() => generateJenjangKelas(8)}
+                  className="bg-white hover:bg-indigo-100/60 text-indigo-700 text-xs h-8 border-indigo-200 shadow-sm"
+                >
+                  + Rombel 8A–8I
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={kelasLoading}
+                  onClick={() => generateJenjangKelas(9)}
+                  className="bg-white hover:bg-indigo-100/60 text-indigo-700 text-xs h-8 border-indigo-200 shadow-sm"
+                >
+                  + Rombel 9A–9I
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t">
               <Button variant="outline" onClick={() => setKelasDialogOpen(false)}>Batal</Button>
-              <Button onClick={tambahKelas} disabled={kelasLoading} className="bg-indigo-600 hover:bg-indigo-700">
-                {kelasLoading ? "Menambah..." : "Tambah"}
+              <Button onClick={tambahKelas} disabled={kelasLoading || !newKelasName.trim()} className="bg-indigo-600 hover:bg-indigo-700">
+                {kelasLoading ? "Menyimpan..." : "Tambah Kelas"}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Dialog Tambah Siswa Efisien & Terstruktur */}
+      <Dialog open={tambahSiswaModalOpen} onOpenChange={setTambahSiswaModalOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                <UserPlus className="h-4 w-4" />
+              </div>
+              <span>Tambah Siswa Baru</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Target Kelas Selector */}
+            <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
+              <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
+                Target Kelas Siswa
+              </label>
+              <div className="flex items-center gap-2">
+                <Select value={modalTargetKelas} onValueChange={(val) => setModalTargetKelas(val ?? "")}>
+                  <SelectTrigger className="bg-white h-9">
+                    <SelectValue placeholder="Pilih Kelas Tujuan" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {kelasList.map((k) => (
+                      <SelectItem key={k.id} value={k.nama}>
+                        Kelas {k.nama} ({kelasCounts[k.nama] || 0} siswa)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {modalTargetKelas && (
+                  <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 whitespace-nowrap h-8 px-2.5">
+                    Kelas {modalTargetKelas}
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {/* Tab Navigasi Cara Input */}
+            <div className="grid grid-cols-3 gap-1 p-1 bg-slate-100 rounded-lg text-xs font-medium">
+              <button
+                type="button"
+                onClick={() => setModalActiveTab("single")}
+                className={`py-2 px-3 rounded-md transition-all flex items-center justify-center gap-1.5 ${
+                  modalActiveTab === "single"
+                    ? "bg-white text-emerald-700 font-semibold shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Satu Siswa</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalActiveTab("multi")}
+                className={`py-2 px-3 rounded-md transition-all flex items-center justify-center gap-1.5 ${
+                  modalActiveTab === "multi"
+                    ? "bg-white text-emerald-700 font-semibold shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <Layers className="h-3.5 w-3.5" />
+                <span>Tempel Daftar (Teks)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalActiveTab("excel")}
+                className={`py-2 px-3 rounded-md transition-all flex items-center justify-center gap-1.5 ${
+                  modalActiveTab === "excel"
+                    ? "bg-white text-emerald-700 font-semibold shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                <FileSpreadsheet className="h-3.5 w-3.5" />
+                <span>Upload Excel</span>
+              </button>
+            </div>
+
+            {/* Tab 1: Single Siswa */}
+            {modalActiveTab === "single" && (
+              <form onSubmit={handleSimpanSingleSiswa} className="space-y-3 pt-1">
+                <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">Nama Lengkap Siswa *</label>
+                  <Input
+                    placeholder="Contoh: Ahmad Rizki Pratama"
+                    value={modalSingleNama}
+                    onChange={(e) => setModalSingleNama(e.target.value)}
+                    required
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">NISN (Nomor Induk Siswa Nasional)</label>
+                  <Input
+                    placeholder="Contoh: 0081234567 (opsional / username login)"
+                    value={modalSingleNisn}
+                    onChange={(e) => setModalSingleNisn(e.target.value)}
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Bila NISN diisi, siswa dapat login langsung menggunakan NISN sebagai username dan password awal.
+                  </p>
+                </div>
+                <div className="flex justify-end gap-2 pt-3 border-t">
+                  <Button type="button" variant="outline" onClick={() => setTambahSiswaModalOpen(false)}>
+                    Batal
+                  </Button>
+                  <Button type="submit" disabled={modalSubmitting || !modalSingleNama.trim()} className="bg-emerald-600 hover:bg-emerald-700">
+                    {modalSubmitting ? "Menyimpan..." : "Simpan Siswa"}
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {/* Tab 2: Multi-Line Paste */}
+            {modalActiveTab === "multi" && (
+              <form onSubmit={handleSimpanMultiSiswa} className="space-y-3 pt-1">
+                <div>
+                  <label className="text-xs font-medium text-slate-700 mb-1 block">
+                    Tempelkan Daftar Siswa (1 Baris = 1 Siswa)
+                  </label>
+                  <textarea
+                    rows={6}
+                    className="w-full text-xs font-mono rounded-lg border border-slate-300 p-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    placeholder={`Ahmad Rizki Pratama, 0081234567\nBudi Santoso\nCitra Lestari Dewi, 0087654321`}
+                    value={modalMultiText}
+                    onChange={(e) => setModalMultiText(e.target.value)}
+                  />
+                  <div className="mt-1.5 p-2.5 rounded-lg bg-emerald-50/70 border border-emerald-100 text-[11px] text-emerald-800 space-y-1">
+                    <p className="font-semibold">Format Baris:</p>
+                    <p>• <code>Nama Siswa</code> saja (NISN kosong)</p>
+                    <p>• <code>Nama Siswa, NISN</code> (pisahkan dengan koma atau tab dari copy Excel/Word)</p>
+                    <p>Semua baris di atas otomatis masuk ke <strong>Kelas {modalTargetKelas || "yang dipilih"}</strong>.</p>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-3 border-t">
+                  <Button type="button" variant="outline" onClick={() => setTambahSiswaModalOpen(false)}>
+                    Batal
+                  </Button>
+                  <Button type="submit" disabled={modalSubmitting || !modalMultiText.trim()} className="bg-emerald-600 hover:bg-emerald-700">
+                    {modalSubmitting ? "Memproses..." : "Simpan Semua Siswa"}
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {/* Tab 3: Upload Excel */}
+            {modalActiveTab === "excel" && (
+              <div className="space-y-3 pt-1">
+                <div className="p-4 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 text-center space-y-3">
+                  <FileSpreadsheet className="h-10 w-10 text-emerald-600 mx-auto" />
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">
+                      Import Siswa untuk Kelas {modalTargetKelas}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                      Format kolom Excel: Kolom A = <strong>Nama Siswa</strong>, Kolom B = <strong>NISN</strong> (opsional).
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 pt-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={downloadTemplate}
+                      className="text-xs gap-1.5"
+                    >
+                      <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-600" /> Unduh Template Excel
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={modalSubmitting}
+                      onClick={() => modalExcelRef.current?.click()}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs gap-1.5"
+                    >
+                      <Upload className="h-3.5 w-3.5" /> {modalSubmitting ? "Mengimport..." : "Pilih File Excel"}
+                    </Button>
+                    <input
+                      ref={modalExcelRef}
+                      type="file"
+                      accept=".xlsx,.xls"
+                      onChange={importModalExcel}
+                      className="hidden"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 pt-2 border-t">
+                  <Button type="button" variant="outline" onClick={() => setTambahSiswaModalOpen(false)}>
+                    Tutup
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
