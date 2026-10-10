@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
@@ -13,8 +13,7 @@ import {
   Send, Key, Copy, Check, RefreshCw, MessageCircleHeart, Shield,
   LogIn, LogOut, User, Sparkles, Smile, Frown, Heart, Brain,
   Lightbulb, BookOpen, ChevronRight, Eye, EyeOff, CheckCheck,
-  Save, Trash2, Link as LinkIcon, Users, UserCheck, ShieldCheck,
-  Sparkle, Info
+  Users, UserCheck, CheckCircle2, Info
 } from "lucide-react"
 import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
@@ -45,19 +44,19 @@ interface GuruBK {
 }
 
 const suggestedTopics = [
-  { icon: Heart, label: "Patah hati / Percintaan", color: "text-rose-500", bg: "bg-rose-50" },
-  { icon: Brain, label: "Stres & Tekanan Belajar", color: "text-amber-500", bg: "bg-amber-50" },
-  { icon: Smile, label: "Percaya Diri & Mental", color: "text-emerald-500", bg: "bg-emerald-50" },
-  { icon: Frown, label: "Cemas & Ketakutan", color: "text-violet-500", bg: "bg-violet-50" },
-  { icon: Lightbulb, label: "Bingung Cita-Cita / Masa Depan", color: "text-blue-500", bg: "bg-blue-50" },
-  { icon: BookOpen, label: "Masalah Pertemanan / Bullying", color: "text-indigo-500", bg: "bg-indigo-50" },
+  { icon: Heart, label: "Patah hati / Masalah Percintaan", color: "text-rose-500", bg: "bg-rose-50" },
+  { icon: Brain, label: "Stres & Beban Pelajaran", color: "text-amber-500", bg: "bg-amber-50" },
+  { icon: Smile, label: "Percaya Diri & Menghadapi Masalah", color: "text-emerald-500", bg: "bg-emerald-50" },
+  { icon: Frown, label: "Cemas, Takut & Tekanan Emosi", color: "text-violet-500", bg: "bg-violet-50" },
+  { icon: Lightbulb, label: "Bingung Cita-Cita & Sekolah Lanjutan", color: "text-blue-500", bg: "bg-blue-50" },
+  { icon: BookOpen, label: "Masalah Pertemanan / Relasi Sosial", color: "text-indigo-500", bg: "bg-indigo-50" },
 ]
 
 const quotes = [
-  "Kamu berani curhat, itu langkah besar. Guru BK selalu siap mendengarkan tanpa menghakimi.",
-  "Tidak ada cerita yang salah. Semua yang kamu rasakan itu penting dan valid.",
-  "Kamu tidak sendirian. Setiap masalah pasti ada jalan keluarnya bersama.",
-  "Bicara itu obat yang menenangkan jiwa. Yuk, ceritakan apa yang mengganjal di hatimu.",
+  "Curhat adalah langkah bijak untuk menemukan solusi. Guru BK selalu siap mendengarkanmu.",
+  "Tidak ada cerita yang salah. Semua yang kamu rasakan penting untuk didengarkan.",
+  "Kamu tidak sendirian menghadapi tantangan belajar atau masalah pribadi.",
+  "Menceritakan apa yang mengganjal di hati adalah awal dari kelegaan dan ketenangan jiwa.",
 ]
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -84,8 +83,8 @@ export function ChatInterface() {
   const { user, login, logout, loading: authLoading } = useAuth()
   const router = useRouter()
 
-  // Base anonymous ID (for guest or stored)
-  const [baseAnonId, setBaseAnonId] = useState<string>("")
+  // Base anonymous ID (only for unauthenticated guest)
+  const [guestAnonId, setGuestAnonId] = useState<string>("")
   const [inputId, setInputId] = useState("")
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [newMessage, setNewMessage] = useState("")
@@ -96,10 +95,7 @@ export function ChatInterface() {
   const [guruList, setGuruList] = useState<GuruBK[]>([])
   const [selectedGuruId, setSelectedGuruId] = useState<string>("") // "" = Semua Guru BK
 
-  // Identity mode for logged in student: "nama" | "anonim"
-  const [identityMode, setIdentityMode] = useState<"nama" | "anonim">("nama")
-
-  // Login modal
+  // Login modal (for guests)
   const [showLogin, setShowLogin] = useState(false)
   const [loginUsername, setLoginUsername] = useState("")
   const [loginPassword, setLoginPassword] = useState("")
@@ -110,7 +106,7 @@ export function ChatInterface() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const [quote] = useState(() => quotes[Math.floor(Math.random() * quotes.length)])
 
-  // Fetch daftar Guru BK
+  // Fetch daftar Guru BK yang terdaftar di sistem
   useEffect(() => {
     async function loadGuruBK() {
       try {
@@ -126,29 +122,23 @@ export function ChatInterface() {
     loadGuruBK()
   }, [])
 
-  // Inisialisasi anonymousId dasar
+  // Inisialisasi guest ID
   useEffect(() => {
-    setBaseAnonId(getStoredOrCreateAnonymousId())
+    setGuestAnonId(getStoredOrCreateAnonymousId())
   }, [])
 
-  // Tentukan active thread ID
-  // Jika siswa login:
-  // - Mode nama: SISWA_{userId}_{guruId || 'umum'}
-  // - Mode anonim: ANON_{userId.slice(-6)}_{guruId || 'umum'}
-  // Jika belum login:
-  // - baseAnonId
+  const isStudent = Boolean(user && user.role === "siswa")
+
+  // Tentukan active thread ID:
+  // - Jika siswa LOGIN: SISWA_{userId}_{guruId || 'umum'} (TIDAK PERLU ANONIM, selalu nama asli)
+  // - Jika siswa BELUM LOGIN (Tamu): guestAnonId
   const getActiveThreadId = useCallback(() => {
-    if (!user || user.role !== "siswa") {
-      return baseAnonId || "BK-GUEST-0000"
-    }
-    const targetTag = selectedGuruId ? selectedGuruId : "umum"
-    if (identityMode === "nama") {
+    if (isStudent && user) {
+      const targetTag = selectedGuruId ? selectedGuruId : "umum"
       return `SISWA_${user.id}_${targetTag}`
-    } else {
-      const anonCode = user.anonymousId || baseAnonId || `USER_${user.id.slice(-6)}`
-      return selectedGuruId ? `${anonCode}_${targetTag}` : anonCode
     }
-  }, [user, identityMode, selectedGuruId, baseAnonId])
+    return guestAnonId || "BK-GUEST-0000"
+  }, [isStudent, user, selectedGuruId, guestAnonId])
 
   const activeThreadId = getActiveThreadId()
 
@@ -184,12 +174,12 @@ export function ChatInterface() {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  function generateNewId() {
+  function generateNewGuestId() {
     const newId = createAnonymousId()
-    setBaseAnonId(newId)
+    setGuestAnonId(newId)
     localStorage.setItem("bk_anon_id", newId)
     setMessages([])
-    toast.success("ID anonim baru dibuat!")
+    toast.success("Sesi anonim baru dibuat!")
   }
 
   async function sendMessage() {
@@ -197,7 +187,10 @@ export function ChatInterface() {
     if (!text || !activeThreadId) return
     setSending(true)
     try {
-      const isAnon = user && user.role === "siswa" ? identityMode === "anonim" : true
+      // Siswa login: isAnonymous = false (selalu nama asli)
+      // Tamu belum login: isAnonymous = true
+      const isAnon = !isStudent
+
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -235,65 +228,18 @@ export function ChatInterface() {
   async function lookupId() {
     if (!inputId.trim()) return
     const target = inputId.trim()
-    setBaseAnonId(target)
+    setGuestAnonId(target)
     localStorage.setItem("bk_anon_id", target)
     await fetchMessages(target)
     setInputId("")
     toast.success(`Memuat percakapan ID ${target}...`)
   }
 
-  async function copyId() {
+  async function copyGuestId() {
     await navigator.clipboard.writeText(activeThreadId)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
     toast.success("ID percakapan disalin!")
-  }
-
-  function updateStoredUser(updates: Record<string, unknown>) {
-    const stored = localStorage.getItem("bk_user")
-    if (!stored) return
-    try {
-      const current = JSON.parse(stored)
-      const updated = { ...current, ...updates }
-      localStorage.setItem("bk_user", JSON.stringify(updated))
-      window.dispatchEvent(new Event("bk-auth-change"))
-    } catch { /* silent */ }
-  }
-
-  async function saveAnonymousId() {
-    if (!user || !baseAnonId) return
-    try {
-      const res = await fetch("/api/user/anonymous-id", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id, anonymousId: baseAnonId }),
-      })
-      if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || "Gagal menyimpan")
-      }
-      const data = await res.json()
-      updateStoredUser({ anonymousId: data.user.anonymousId })
-      toast.success("ID anonim tersimpan di akun!")
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Gagal menyimpan")
-    }
-  }
-
-  async function removeAnonymousId() {
-    if (!user) return
-    try {
-      const res = await fetch("/api/user/anonymous-id", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id }),
-      })
-      if (!res.ok) throw new Error()
-      updateStoredUser({ anonymousId: null })
-      toast.success("ID anonim dihapus dari akun")
-    } catch {
-      toast.error("Gagal menghapus")
-    }
   }
 
   async function handleLogin(e: React.FormEvent) {
@@ -320,31 +266,30 @@ export function ChatInterface() {
   const selectedGuruObj = guruList.find((g) => g.id === selectedGuruId)
   const hasMessages = messages.length > 0
   const hasGuruReply = messages.some((m) => m.senderRole === "guru" || m.senderRole === "admin")
-  const isStudent = user && user.role === "siswa"
 
   return (
     <div className="mx-auto max-w-3xl space-y-4 pb-20 md:pb-6">
-      {/* HEADER */}
+      {/* 1. HEADER UTAMA */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-200">
             <MessageCircleHeart className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Curhat & Konseling BK</h1>
-            <p className="text-xs text-gray-500">Ruang aman untuk berbagi cerita & bimbingan</p>
+            <h1 className="text-xl font-bold text-gray-900">Curhat & Konseling Siswa</h1>
+            <p className="text-xs text-gray-500">Ruang bimbingan konseling resmi SMP Negeri 1 Genteng</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           {!authLoading && (
             user ? (
               <div className="flex items-center gap-2 rounded-full bg-emerald-50 pl-2 pr-3 py-1.5 ring-1 ring-emerald-200">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white">
                   <User className="h-3.5 w-3.5" />
                 </div>
                 <div className="flex flex-col text-left">
                   <span className="text-xs font-bold text-emerald-800 max-w-[120px] truncate">{user.name}</span>
-                  {user.kelas && <span className="text-[10px] text-emerald-600">Kelas {user.kelas}</span>}
+                  {user.kelas && <span className="text-[10px] text-emerald-600 font-semibold">Kelas {user.kelas}</span>}
                 </div>
                 <button
                   onClick={async () => {
@@ -374,100 +319,56 @@ export function ChatInterface() {
         <OnlineIndicator minimal />
       </div>
 
-      {/* JIKA SISWA SUDAH LOGIN: KONTROL PILIH GURU BK & MODE IDENTITAS */}
-      {isStudent ? (
+      {/* 2. JIKA SISWA SUDAH LOGIN: IDENTITAS RESMI & PILIH GURU BK TERDAFTAR */}
+      {isStudent && user ? (
         <Card className="border border-indigo-100 bg-white p-4 sm:p-5 rounded-2xl shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700">
-                <Sparkles className="h-4 w-4" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-bold">
+                <UserCheck className="h-4 w-4" />
               </div>
-              <h2 className="text-sm font-bold text-gray-900">Pengaturan Konseling Kamu</h2>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-extrabold text-slate-900">{user.name}</span>
+                  <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 text-[10px] font-bold">
+                    Kelas {user.kelas || "-"}
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  NISN: <code className="font-semibold text-slate-700">{user.username}</code> · Identitas resmi terverifikasi
+                </p>
+              </div>
             </div>
-            <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200">
-              Akun Siswa Aktif
+            <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700 border border-emerald-200 self-start sm:self-auto flex items-center gap-1">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Curhat dengan Nama Asli
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* PILIH GURU BK */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5 text-indigo-600" />
-                Pilih Guru BK Tujuan Curhat:
-              </Label>
+          {/* PILIH GURU BK TERDAFTAR */}
+          <div className="space-y-2">
+            <Label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <Users className="h-4 w-4 text-indigo-600" />
+              Pilih Guru BK Tujuan Curhat / Konseling:
+            </Label>
+            <div className="flex flex-col sm:flex-row gap-2">
               <select
                 value={selectedGuruId}
                 onChange={(e) => setSelectedGuruId(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50/70 p-2.5 text-xs font-medium text-gray-800 transition-colors focus:border-indigo-500 focus:bg-white focus:outline-none"
+                className="flex-1 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:bg-white focus:outline-none"
               >
                 <option value="">🌟 Semua Guru BK (Bimbingan Konseling Umum)</option>
                 {guruList.map((g) => (
                   <option key={g.id} value={g.id}>
-                    👩‍🏫 {g.name} {g.mapel ? `(${g.mapel})` : "(Guru BK)"}
+                    👩‍🏫 {g.name} {g.mapel ? `· ${g.mapel}` : "· Guru BK"}
                   </option>
                 ))}
               </select>
-              <p className="text-[11px] text-gray-400">
-                {selectedGuruObj
-                  ? `Pesanmu akan ditujukan khusus ke ${selectedGuruObj.name}.`
-                  : "Pesanmu akan masuk ke ruang BK umum dan dapat dibalas oleh semua Guru BK."}
-              </p>
             </div>
-
-            {/* PILIH MODE IDENTITAS (ANONIM ATAU NAMA ASLI) */}
-            <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-                <ShieldCheck className="h-3.5 w-3.5 text-indigo-600" />
-                Pilih Mode Identitas Siswa:
-              </Label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIdentityMode("nama")}
-                  className={`flex flex-col items-start gap-1 rounded-xl p-2.5 text-left border transition-all ${
-                    identityMode === "nama"
-                      ? "border-emerald-500 bg-emerald-50/70 text-emerald-900 shadow-xs ring-1 ring-emerald-500"
-                      : "border-gray-200 bg-gray-50/60 text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-xs font-bold flex items-center gap-1">
-                      <UserCheck className="h-3.5 w-3.5 text-emerald-600" /> Nama Asli
-                    </span>
-                    {identityMode === "nama" && <Check className="h-3.5 w-3.5 text-emerald-600" />}
-                  </div>
-                  <span className="text-[10px] text-gray-500 line-clamp-1">
-                    {user.name} ({user.kelas || "Siswa"})
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setIdentityMode("anonim")}
-                  className={`flex flex-col items-start gap-1 rounded-xl p-2.5 text-left border transition-all ${
-                    identityMode === "anonim"
-                      ? "border-violet-500 bg-violet-50/70 text-violet-900 shadow-xs ring-1 ring-violet-500"
-                      : "border-gray-200 bg-gray-50/60 text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="text-xs font-bold flex items-center gap-1">
-                      <Shield className="h-3.5 w-3.5 text-violet-600" /> Mode Anonim
-                    </span>
-                    {identityMode === "anonim" && <Check className="h-3.5 w-3.5 text-violet-600" />}
-                  </div>
-                  <span className="text-[10px] text-gray-500">
-                    100% Rahasia (Tanpa Nama)
-                  </span>
-                </button>
-              </div>
-              <p className="text-[11px] text-gray-400">
-                {identityMode === "nama"
-                  ? "Guru BK akan melihat nama dan kelasmu untuk bimbingan langsung."
-                  : "Identitasmu disamarkan sepenuhnya. Guru BK hanya melihat ID percakapan."}
-              </p>
-            </div>
+            <p className="text-[11px] text-slate-500 leading-relaxed">
+              {selectedGuruObj
+                ? `Pesanmu akan ditujukan khusus ke ${selectedGuruObj.name}. Hanya beliau dan Anda yang berada di sesi konseling ini.`
+                : "Pesanmu akan masuk ke Ruang BK Umum dan dapat dibaca serta dibalas oleh seluruh Tim Guru BK SMPN 1 Genteng."}
+            </p>
           </div>
         </Card>
       ) : (
@@ -480,11 +381,11 @@ export function ChatInterface() {
                   Mode Tamu Anonim
                 </span>
                 <code className="text-xs font-bold text-amber-900 bg-white/70 px-2 py-0.5 rounded border border-amber-200">
-                  {baseAnonId}
+                  {guestAnonId}
                 </code>
               </div>
               <p className="text-xs text-amber-800 leading-relaxed">
-                Kamu saat ini curhat sebagai tamu anonim umum. Ingin <strong>memilih Guru BK favorit</strong> atau curhat menggunakan <strong>nama aslimu</strong>?
+                Kamu saat ini belum masuk akun. Untuk <strong>curhat dengan nama aslimu</strong> dan <strong>memilih Guru BK terdaftar</strong>, silakan masuk ke akun siswa.
               </p>
             </div>
             <Button
@@ -498,75 +399,25 @@ export function ChatInterface() {
         </Card>
       )}
 
-      {/* ID BANNER INFO UNTUK PENYIMPANAN / TRACKING */}
-      <Card className="overflow-hidden border-0 bg-gradient-to-r from-violet-600 to-indigo-600 shadow-md">
-        <div className="relative p-4 sm:p-5">
-          <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/5" />
-          <div className="pointer-events-none absolute -bottom-6 -left-6 h-16 w-16 rounded-full bg-white/5" />
-          <div className="relative flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <Shield className="h-5 w-5 text-violet-200 shrink-0" />
-              <span className="text-xs sm:text-sm font-medium text-violet-100">Kode Sesi Percakapan:</span>
-              <code className="rounded-lg bg-white/15 px-3 py-1.5 text-xs sm:text-sm font-bold tracking-wide text-white backdrop-blur">
-                {activeThreadId}
-              </code>
-              <div className="flex gap-1">
-                <button
-                  onClick={copyId}
-                  title="Salin Kode Percakapan"
-                  className="rounded-lg bg-white/10 p-1.5 text-violet-200 transition-colors hover:bg-white/20"
-                >
-                  {copied ? <Check className="h-4 w-4 text-green-300" /> : <Copy className="h-4 w-4" />}
-                </button>
-                {!user && (
-                  <button
-                    onClick={generateNewId}
-                    title="Buat Sesi Baru"
-                    className="rounded-lg bg-white/10 p-1.5 text-violet-200 transition-colors hover:bg-white/20"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="text-right">
-              {isStudent && identityMode === "nama" ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/20 px-2.5 py-1 text-[11px] font-bold text-emerald-100 border border-emerald-300/30">
-                  <UserCheck className="h-3 w-3" /> Identitas Terbuka
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 rounded-full bg-violet-400/20 px-2.5 py-1 text-[11px] font-bold text-violet-100 border border-violet-300/30">
-                  <Shield className="h-3 w-3" /> 100% Rahasia Anonim
-                </span>
-              )}
-            </div>
+      {/* JIKA TAMU: KOTAK BANTUAN ID ANONIM & CARI SESI */}
+      {!isStudent && (
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <Key className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Input
+              placeholder="Punya kode sesi anonim sebelumnya? Masukkan di sini..."
+              value={inputId}
+              onChange={(e) => setInputId(e.target.value)}
+              className="pl-9 rounded-xl border-gray-200 text-xs"
+            />
           </div>
-          <p className="mt-2 text-xs text-violet-200">
-            {isStudent && identityMode === "nama"
-              ? `Tersambung sebagai ${user.name} (Kelas ${user.kelas || "-"}). Kamu dapat membuka kembali obrolan ini kapan saja.`
-              : "Simpan kode ini jika ingin membuka obrolan ini kembali dari perangkat lain."}
-          </p>
+          <Button variant="outline" size="sm" onClick={lookupId} className="gap-1.5 shrink-0 rounded-xl text-xs">
+            <Key className="h-3.5 w-3.5" /> Buka Obrolan
+          </Button>
         </div>
-      </Card>
+      )}
 
-      {/* PENCARIAN SESI VIA ID */}
-      <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Key className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input
-            placeholder="Punya kode sesi lain? Masukkan di sini..."
-            value={inputId}
-            onChange={(e) => setInputId(e.target.value)}
-            className="pl-9 rounded-xl border-gray-200 text-xs"
-          />
-        </div>
-        <Button variant="outline" size="sm" onClick={lookupId} className="gap-1.5 shrink-0 rounded-xl text-xs">
-          <Key className="h-3.5 w-3.5" /> Buka Obrolan
-        </Button>
-      </div>
-
-      {/* CHAT AREA */}
+      {/* 3. CHAT AREA */}
       <Card className="border border-slate-200/80 shadow-sm overflow-hidden rounded-2xl bg-white">
         {/* CHAT BANNER HEADER */}
         <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-4 py-3">
@@ -580,19 +431,19 @@ export function ChatInterface() {
               </p>
               <p className="text-[10px] text-slate-500">
                 {selectedGuruObj
-                  ? selectedGuruObj.mapel || "Guru Bimbingan Konseling"
+                  ? selectedGuruObj.mapel || "Guru Bimbingan Konseling Terdaftar"
                   : "Ditujukan ke seluruh Tim Konselor BK"}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
-            {isStudent && identityMode === "nama" ? (
-              <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-0 text-[10px]">
-                👤 {user.name.split(" ")[0]} ({user.kelas || "-"})
+            {isStudent && user ? (
+              <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 border-0 text-[10px] font-bold">
+                👤 {user.name} ({user.kelas || "Siswa"})
               </Badge>
             ) : (
-              <Badge className="bg-violet-100 text-violet-800 hover:bg-violet-100 border-0 text-[10px]">
-                🕵️ Anonim
+              <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-100 border-0 text-[10px]">
+                🕵️ Tamu Anonim
               </Badge>
             )}
           </div>
@@ -617,7 +468,7 @@ export function ChatInterface() {
                     <button
                       key={topic.label}
                       onClick={() => {
-                        setNewMessage(`Halo, aku ingin bercerita tentang ${topic.label.toLowerCase()}...`)
+                        setNewMessage(`Halo, saya ingin bercerita tentang ${topic.label.toLowerCase()}...`)
                         inputRef.current?.focus()
                       }}
                       className={`flex items-center gap-1.5 rounded-xl ${topic.bg} p-2 text-xs font-semibold text-gray-700 transition-all hover:shadow-xs hover:scale-[1.01]`}
@@ -637,9 +488,9 @@ export function ChatInterface() {
                 {messages.map((msg) => {
                   const isFromStudent = msg.senderRole === "siswa"
                   const displayName = isFromStudent
-                    ? (msg.isAnonymous === false && msg.senderName
+                    ? (msg.senderName
                         ? `${msg.senderName} (${msg.senderKelas || "Siswa"})`
-                        : "Kamu (Anonim)")
+                        : (user ? `${user.name} (${user.kelas || "Siswa"})` : "Tamu Anonim"))
                     : (msg.senderName ? `Guru BK: ${msg.senderName}` : "Guru BK")
 
                   return (
@@ -684,14 +535,14 @@ export function ChatInterface() {
         </ScrollArea>
       </Card>
 
-      {/* INPUT AREA */}
+      {/* 4. INPUT AREA */}
       <div className="flex items-end gap-2">
         <div className="relative flex-1">
           <Textarea
             ref={inputRef}
             placeholder={
               selectedGuruObj
-                ? `Tulis pesanmu untuk ${selectedGuruObj.name}...`
+                ? `Tulis pesan untuk ${selectedGuruObj.name}...`
                 : "Ceritakan apa yang sedang kamu rasakan..."
             }
             value={newMessage}
@@ -719,12 +570,12 @@ export function ChatInterface() {
         <div>
           <p className="text-xs font-bold text-amber-900">Butuh Bantuan Darurat?</p>
           <p className="text-xs text-amber-800 leading-relaxed">
-            Jika kamu mengalami situasi krisis yang mengancam keselamatan diri atau orang lain, temui Guru BK secara langsung di ruang BK SMPN 1 Genteng atau hubungi hotline darurat kesehatan mental Kemenkes RI di <strong>119 ext 8</strong>.
+            Jika kamu mengalami situasi krisis yang mendesak, temui Guru BK secara langsung di ruang BK SMPN 1 Genteng atau hubungi hotline darurat kesehatan mental Kemenkes RI di <strong>119 ext 8</strong>.
           </p>
         </div>
       </div>
 
-      {/* LOGIN SISWA MODAL */}
+      {/* LOGIN SISWA MODAL (UNTUK PENGGUNA BELUM LOGIN) */}
       <Dialog open={showLogin} onOpenChange={setShowLogin}>
         <DialogContent className="sm:max-w-sm rounded-2xl">
           <DialogHeader>
@@ -735,7 +586,7 @@ export function ChatInterface() {
               Masuk Akun Siswa
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Masuk dengan akun siswa untuk memilih Guru BK favoritmu dan memilih curhat dengan nama asli atau anonim.
+              Masuk dengan akun siswa untuk curhat menggunakan nama aslimu dan memilih Guru BK terdaftar.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleLogin} className="space-y-4 pt-2">

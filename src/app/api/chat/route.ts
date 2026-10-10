@@ -88,21 +88,14 @@ export async function POST(req: Request) {
         isAnonymous = false
       } else if (session.role === "siswa") {
         senderRole = "siswa"
-        // Siswa sudah login: dapat memilih anonim atau nama asli
-        if (reqIsAnonymous === false) {
-          isAnonymous = false
-          // Ambil kelas terbaru dari database
-          const siswaUser = await prisma.user.findUnique({
-            where: { id: session.id },
-            select: { name: true, kelas: true },
-          })
-          senderName = siswaUser?.name || session.name
-          senderKelas = siswaUser?.kelas || null
-        } else {
-          isAnonymous = true
-          senderName = null
-          senderKelas = null
-        }
+        // Siswa sudah login: selalu menggunakan nama aslinya (bukan anonim)
+        isAnonymous = false
+        const siswaUser = await prisma.user.findUnique({
+          where: { id: session.id },
+          select: { name: true, kelas: true },
+        })
+        senderName = siswaUser?.name || session.name
+        senderKelas = siswaUser?.kelas || null
       }
     } else {
       // Siswa belum login (tamu): selalu mode anonim
