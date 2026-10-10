@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
 import { useAuth } from "@/lib/auth-context"
-import { questions, hitungSkor, getTipeMBTI, getPersentase, labelDimensi, getDeskripsi } from "@/lib/asesmen/mbti"
+import { questionsSiswa as questions, hitungSkor, getTipeMBTI, getPersentase, labelDimensi, getDeskripsi } from "@/lib/asesmen/mbti"
 import { motion, AnimatePresence } from "framer-motion"
 import { AssessmentMascot } from "@/components/asesmen/assessment-mascot"
 import { ThreeMascot3D } from "@/components/asesmen/three-mascot-3d"
@@ -220,7 +220,7 @@ export function MbtiForm() {
   if (mode === "hasil" && hasil) {
     const tipe = getTipeMBTI(hasil)
     const persentase = getPersentase(hasil)
-    const deskripsi = getDeskripsi(tipe)
+    const deskripsi = getDeskripsi(tipe, "siswa")
     return (
       <div className="space-y-6">
         <Card className="border-0 bg-gradient-to-br from-indigo-50 via-purple-50 to-white shadow-md overflow-hidden relative">

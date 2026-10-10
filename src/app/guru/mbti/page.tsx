@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
-import { questions, hitungSkor, getTipeMBTI, getPersentase, labelDimensi, getDeskripsi } from "@/lib/asesmen/mbti"
+import { questionsGuru as questions, hitungSkor, getTipeMBTI, getPersentase, labelDimensi, getDeskripsi } from "@/lib/asesmen/mbti"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   ArrowLeft,
@@ -115,7 +115,7 @@ export default function GuruMbtiPage() {
   // SCREEN: Hasil Tersimpan Sebelumnya
   if (existing && !hasil && !showReview) {
     const tipe = getTipeMBTI(existing)
-    const deskripsi = getDeskripsi(tipe)
+    const deskripsi = getDeskripsi(tipe, "guru")
     return (
       <div className="max-w-xl mx-auto space-y-4 pb-12">
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }}>
@@ -168,7 +168,7 @@ export default function GuruMbtiPage() {
   if (hasil) {
     const tipe = getTipeMBTI(hasil)
     const persentase = getPersentase(hasil)
-    const deskripsi = getDeskripsi(tipe)
+    const deskripsi = getDeskripsi(tipe, "guru")
 
     return (
       <div className="max-w-2xl mx-auto space-y-5 pb-12">

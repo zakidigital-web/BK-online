@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
-import { hitungSkor } from "@/lib/asesmen/mbti"
+import { hitungSkor, questionsGuru } from "@/lib/asesmen/mbti"
 import { getServerSession } from "@/lib/session"
 
 export async function POST(req: Request) {
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     const user = await prisma.user.findUnique({ where: { id: guruId } })
     if (!user) return NextResponse.json({ error: "User tidak ditemukan" }, { status: 404 })
 
-    const skor = hitungSkor(jawaban)
+    const skor = hitungSkor(jawaban, questionsGuru)
     const jawabanStr = JSON.stringify(jawaban)
     const skorStr = JSON.stringify(skor)
 

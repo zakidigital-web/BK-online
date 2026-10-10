@@ -361,7 +361,7 @@ export default function GuruLaporanPage() {
             {(() => {
               const tipe = getTipeMBTI(skorMbti)
               const persentase = getPersentase(skorMbti)
-              const deskripsi = getDeskripsi(tipe)
+              const deskripsi = getDeskripsi(tipe, "guru")
               return (
                 <>
                   <Card className="border-0 bg-gradient-to-br from-indigo-50 to-purple-50 shadow-sm rounded-3xl p-6 text-center">
