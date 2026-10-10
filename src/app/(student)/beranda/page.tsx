@@ -125,7 +125,7 @@ export default function SiswaBerandaPage() {
     { id: "gaya-belajar", title: "Gaya Belajar (VARK)", href: "/asesmen/gaya-belajar", completed: gbCompleted, duration: "3 Menit", icon: BookOpen, color: "from-blue-500 to-indigo-600" },
     { id: "psikologi", title: "Refleksi Emosi & Hati", href: "/asesmen/psikologi", completed: psiCompleted, duration: "3 Menit", icon: Heart, color: "from-rose-500 to-pink-600" },
     { id: "karakter", title: "Karakter & Nilai Diri", href: "/karakter", completed: kdCompleted, duration: "5 Menit", icon: Star, color: "from-amber-500 to-orange-600" },
-    { id: "mbti", title: "Kepribadian MBTI", href: "/asesmen/mbti", completed: mbtiCompleted, duration: "5 Menit", icon: Brain, color: "from-indigo-500 to-purple-600" },
+    { id: "mbti", title: "Kepribadian MBTI", href: "/asesmen/mbti", completed: mbtiCompleted, duration: "6-8 Menit", icon: Brain, color: "from-indigo-500 to-purple-600" },
   ]
   const nextRecommended = pendingAssessments.find((a) => !a.completed)
 
