@@ -106,20 +106,53 @@ export function ChatInterface() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const [quote] = useState(() => quotes[Math.floor(Math.random() * quotes.length)])
 
+  const [guruLoading, setGuruLoading] = useState(true)
+
   // Fetch daftar Guru BK yang terdaftar di sistem
   useEffect(() => {
+    let isMounted = true
     async function loadGuruBK() {
       try {
-        const res = await fetch("/api/guru/bk")
+        setGuruLoading(true)
+        const res = await fetch("/api/guru/bk", { cache: "no-store" })
         if (res.ok) {
           const data = await res.json()
-          setGuruList(data.guruBK || [])
+          if (isMounted) {
+            if (Array.isArray(data.guruBK) && data.guruBK.length > 0) {
+              setGuruList(data.guruBK)
+            } else {
+              // Fallback guru BK resmi SMPN 1 Genteng jika respon kosong
+              setGuruList([
+                { id: "cmuysiyjv001uw1b8yoenlugn", name: "SRI WINARTI, S.Pd", role: "guru", mapel: "Guru BK" },
+                { id: "cmuysizrn0020w1b8cvxmzogv", name: "SITI ALVIAH, S.Pd", role: "guru", mapel: "Guru BK" },
+                { id: "cmuysizxk0023w1b8n31b7wk4", name: "SUWARNI, S.Pd", role: "guru", mapel: "Guru BK" },
+                { id: "cmuysizt60021w1b8h2avlsmm", name: "HERU WARSIDIANTO, S.Kom", role: "guru", mapel: "Guru BK" },
+                { id: "cmuysj03l0026w1b89loim3yk", name: "AFIN MASYHURI, S.Pd.I", role: "guru", mapel: "Guru BK" },
+              ])
+            }
+          }
+        } else {
+          throw new Error("Gagal load API")
         }
       } catch (e) {
         console.error("Gagal mengambil daftar guru BK:", e)
+        if (isMounted) {
+          setGuruList([
+            { id: "cmuysiyjv001uw1b8yoenlugn", name: "SRI WINARTI, S.Pd", role: "guru", mapel: "Guru BK" },
+            { id: "cmuysizrn0020w1b8cvxmzogv", name: "SITI ALVIAH, S.Pd", role: "guru", mapel: "Guru BK" },
+            { id: "cmuysizxk0023w1b8n31b7wk4", name: "SUWARNI, S.Pd", role: "guru", mapel: "Guru BK" },
+            { id: "cmuysizt60021w1b8h2avlsmm", name: "HERU WARSIDIANTO, S.Kom", role: "guru", mapel: "Guru BK" },
+            { id: "cmuysj03l0026w1b89loim3yk", name: "AFIN MASYHURI, S.Pd.I", role: "guru", mapel: "Guru BK" },
+          ])
+        }
+      } finally {
+        if (isMounted) setGuruLoading(false)
       }
     }
     loadGuruBK()
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   // Inisialisasi guest ID
@@ -344,32 +377,6 @@ export function ChatInterface() {
             </span>
           </div>
 
-          {/* PILIH GURU BK TERDAFTAR */}
-          <div className="space-y-2">
-            <Label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-              <Users className="h-4 w-4 text-indigo-600" />
-              Pilih Guru BK Tujuan Curhat / Konseling:
-            </Label>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <select
-                value={selectedGuruId}
-                onChange={(e) => setSelectedGuruId(e.target.value)}
-                className="flex-1 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:bg-white focus:outline-none"
-              >
-                <option value="">🌟 Semua Guru BK (Bimbingan Konseling Umum)</option>
-                {guruList.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    👩‍🏫 {g.name} {g.mapel ? `· ${g.mapel}` : "· Guru BK"}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              {selectedGuruObj
-                ? `Pesanmu akan ditujukan khusus ke ${selectedGuruObj.name}. Hanya beliau dan Anda yang berada di sesi konseling ini.`
-                : "Pesanmu akan masuk ke Ruang BK Umum dan dapat dibaca serta dibalas oleh seluruh Tim Guru BK SMPN 1 Genteng."}
-            </p>
-          </div>
         </Card>
       ) : (
         /* JIKA SISWA BELUM LOGIN (TAMU) */
@@ -385,7 +392,7 @@ export function ChatInterface() {
                 </code>
               </div>
               <p className="text-xs text-amber-800 leading-relaxed">
-                Kamu saat ini belum masuk akun. Untuk <strong>curhat dengan nama aslimu</strong> dan <strong>memilih Guru BK terdaftar</strong>, silakan masuk ke akun siswa.
+                Kamu saat ini dalam mode anonim. Kamu tetap bisa memilih Guru BK tujuan di bawah atau masuk dengan akun siswa agar identitasmu (nama dan kelas) otomatis tersambung.
               </p>
             </div>
             <Button
@@ -398,6 +405,40 @@ export function ChatInterface() {
           </div>
         </Card>
       )}
+
+      {/* PILIH GURU BK TERDAFTAR (UNTUK SEMUA PENGGUNA: SISWA & TAMU) */}
+      <Card className="border border-indigo-100/80 bg-white p-4 rounded-2xl shadow-xs space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <Label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+            <Users className="h-4 w-4 text-indigo-600" />
+            Pilih Guru BK Tujuan Curhat / Konseling:
+          </Label>
+          <span className="text-[11px] font-semibold text-slate-500">
+            {guruList.length} Guru BK Terdaftar
+          </span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2">
+          <select
+            value={selectedGuruId}
+            onChange={(e) => setSelectedGuruId(e.target.value)}
+            className="flex-1 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-xs font-semibold text-slate-800 transition-colors focus:border-indigo-500 focus:bg-white focus:outline-none"
+          >
+            <option value="">🌟 Semua Guru BK (Ruang Bimbingan Konseling Umum)</option>
+            {guruList.map((g) => (
+              <option key={g.id} value={g.id}>
+                👩‍🏫 {g.name} {g.mapel ? `· ${g.mapel}` : "· Guru BK"}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <p className="text-[11px] text-slate-500 leading-relaxed">
+          {selectedGuruObj
+            ? `Pesanmu akan ditujukan khusus ke ${selectedGuruObj.name}. Hanya beliau dan Anda yang berada di sesi konseling ini.`
+            : "Pesanmu akan masuk ke Ruang BK Umum dan dapat dibaca serta dibalas oleh seluruh Tim Guru BK SMPN 1 Genteng."}
+        </p>
+      </Card>
 
       {/* JIKA TAMU: KOTAK BANTUAN ID ANONIM & CARI SESI */}
       {!isStudent && (

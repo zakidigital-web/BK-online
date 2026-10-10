@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 export async function GET() {
   try {
     const guruBK = await prisma.user.findMany({
       where: {
         OR: [
           { role: "guru" },
+          { role: "guru_bk" },
+          { role: "guru-bk" },
           { mapel: { contains: "BK", mode: "insensitive" } },
         ],
         status: { not: "inactive" },
